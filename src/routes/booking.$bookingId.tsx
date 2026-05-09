@@ -72,10 +72,23 @@ function ConfirmationPage() {
             <Row icon={MapPin} label="Destination" value={booking.destination} />
             <Row icon={Car} label="Vehicle" value={trip.vehicle_name} />
           </div>
-          <div className="grid grid-cols-2 gap-4 border-t border-border pt-4 text-sm">
+          <div className="grid grid-cols-3 gap-4 border-t border-border pt-4 text-sm">
             <div>
               <div className="text-xs text-muted-foreground">Seats</div>
               <div className="font-semibold">{booking.seats}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Seat number{(booking.seat_numbers?.length ?? 0) > 1 ? "s" : ""}</div>
+              <div className="flex flex-wrap gap-1">
+                {(booking.seat_numbers ?? []).map((n) => (
+                  <span
+                    key={n}
+                    className="inline-flex h-7 min-w-7 items-center justify-center rounded-md bg-primary px-2 text-xs font-bold text-primary-foreground"
+                  >
+                    #{n}
+                  </span>
+                ))}
+              </div>
             </div>
             <div>
               <div className="text-xs text-muted-foreground">Total (pay on board)</div>

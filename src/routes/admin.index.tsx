@@ -159,7 +159,7 @@ function AdminPage() {
                             <div>
                               <div className="font-medium">{b.customer_name}</div>
                               <div className="text-xs text-muted-foreground">
-                                {b.seats} seat(s) · pickup: {b.pickup_location}
+                                {b.seats} seat(s){b.seat_numbers?.length ? ` · #${b.seat_numbers.join(", #")}` : ""} · pickup: {b.pickup_location}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
