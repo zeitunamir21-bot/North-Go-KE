@@ -136,7 +136,7 @@ function AdminPage() {
                     <div>
                       <div className="font-display text-lg font-bold">{t.route}</div>
                       <div className="text-sm text-muted-foreground">
-                        {formatDateTime(t.departure_time)} · {t.pickup_point} · {t.vehicle_name}
+                        {formatDateTime(t.departure_time)} · {t.pickup_point}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -238,7 +238,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
     total_seats: 7,
     vehicle_name: "Toyota Noah",
     driver_name: "NorthGo Driver",
-    driver_phone: "+254712345678",
+    driver_phone: "+254790179834",
     price: 1500,
   });
 
@@ -293,13 +293,6 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
           required
           value={form.pickup_point}
           onChange={(e) => setForm({ ...form, pickup_point: e.target.value })}
-        />
-      </Field>
-      <Field label="Vehicle name">
-        <Input
-          required
-          value={form.vehicle_name}
-          onChange={(e) => setForm({ ...form, vehicle_name: e.target.value })}
         />
       </Field>
       <Field label="Total seats">

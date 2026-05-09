@@ -79,7 +79,7 @@ function Home() {
                 variant="outline"
                 className="h-14 rounded-xl border-white/30 bg-white/10 px-8 text-base font-semibold text-white backdrop-blur hover:bg-white/20 hover:text-white"
               >
-                <a href="tel:+254712345678">Call driver</a>
+                <a href="tel:+254790179834">Call driver</a>
               </Button>
             </div>
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/85">

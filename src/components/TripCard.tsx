@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Clock, MapPin, Users, Car } from "lucide-react";
+import { ArrowRight, Clock, MapPin, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatDateTime, formatKES } from "@/lib/format";
@@ -47,10 +47,6 @@ export function TripCard({ trip }: { trip: Trip }) {
         <div className="flex items-center gap-2 text-foreground/80">
           <MapPin className="h-4 w-4 text-primary" />
           <span>{trip.pickup_point}</span>
-        </div>
-        <div className="flex items-center gap-2 text-foreground/80">
-          <Car className="h-4 w-4 text-primary" />
-          <span>{trip.vehicle_name}</span>
         </div>
         <div className="flex items-center gap-2 text-foreground/80">
           <Users className="h-4 w-4 text-primary" />

@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Clock, MapPin, Car, Loader2 } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -112,10 +112,6 @@ function BookPage() {
                 <div className="flex items-center gap-2">
                   <MapPin className="h-4 w-4 text-primary" />
                   {trip.pickup_point}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Car className="h-4 w-4 text-primary" />
-                  {trip.vehicle_name}
                 </div>
               </div>
               <div className="mt-5 border-t border-border pt-4">
