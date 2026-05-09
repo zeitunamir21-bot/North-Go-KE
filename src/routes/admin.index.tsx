@@ -295,13 +295,6 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
           onChange={(e) => setForm({ ...form, pickup_point: e.target.value })}
         />
       </Field>
-      <Field label="Vehicle name">
-        <Input
-          required
-          value={form.vehicle_name}
-          onChange={(e) => setForm({ ...form, vehicle_name: e.target.value })}
-        />
-      </Field>
       <Field label="Total seats">
         <Input
           required
