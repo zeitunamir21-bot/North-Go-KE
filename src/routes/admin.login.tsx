@@ -16,7 +16,6 @@ export const Route = createFileRoute("/admin/login")({
 
 function LoginPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,19 +23,22 @@ function LoginPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const fn =
-      mode === "signin"
-        ? supabase.auth.signInWithPassword({ email, password })
-        : supabase.auth.signUp({
-            email,
-            password,
-            options: { emailRedirectTo: `${window.location.origin}/admin` },
-          });
-    const { error } = await fn;
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.session) {
+      setLoading(false);
+      return toast.error(error?.message ?? "Sign in failed");
+    }
+    // Verify admin role before allowing entry
+    const { data: roleRow } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.session.user.id)
+      .eq("role", "admin")
+      .maybeSingle();
     setLoading(false);
-    if (error) return toast.error(error.message);
-    if (mode === "signup") {
-      toast.success("Account created. You're signed in.");
+    if (!roleRow) {
+      await supabase.auth.signOut();
+      return toast.error("This account is not authorized for admin access.");
     }
     navigate({ to: "/admin" });
   }
@@ -46,11 +48,9 @@ function LoginPage() {
       <Header />
       <div className="mx-auto max-w-md px-4 py-16">
         <div className="rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
-          <h1 className="font-display text-3xl font-bold">
-            {mode === "signin" ? "Admin sign in" : "Create admin account"}
-          </h1>
+          <h1 className="font-display text-3xl font-bold">Admin sign in</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            For NorthGo owners and dispatchers.
+            Restricted to NorthGo administrators.
           </p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
@@ -78,16 +78,9 @@ function LoginPage() {
             </div>
             <Button type="submit" disabled={loading} size="lg" className="w-full rounded-xl">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {mode === "signin" ? "Sign in" : "Create account"}
+              Sign in
             </Button>
           </form>
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="mt-4 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            {mode === "signin" ? "Need an account? Sign up" : "Have an account? Sign in"}
-          </button>
           <div className="mt-6 border-t border-border pt-4 text-center text-xs text-muted-foreground">
             <Link to="/">← Back to NorthGo</Link>
           </div>
