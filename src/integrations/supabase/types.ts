@@ -23,6 +23,7 @@ export type Database = {
           id: string
           phone: string
           pickup_location: string
+          seat_numbers: number[]
           seats: number
           trip_id: string
         }
@@ -34,6 +35,7 @@ export type Database = {
           id?: string
           phone: string
           pickup_location: string
+          seat_numbers?: number[]
           seats?: number
           trip_id: string
         }
@@ -45,6 +47,7 @@ export type Database = {
           id?: string
           phone?: string
           pickup_location?: string
+          seat_numbers?: number[]
           seats?: number
           trip_id?: string
         }
@@ -131,6 +134,7 @@ export type Database = {
           id: string
           phone: string
           pickup_location: string
+          seat_numbers: number[]
           seats: number
           trip_id: string
         }
