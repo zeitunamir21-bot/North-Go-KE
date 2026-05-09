@@ -24,11 +24,28 @@ function AdminPage() {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data }) => {
+    async function check() {
+      const { data } = await supabase.auth.getSession();
       if (!mounted) return;
-      if (!data.session) navigate({ to: "/admin/login" });
-      else setAuthChecked(true);
-    });
+      if (!data.session) {
+        navigate({ to: "/admin/login" });
+        return;
+      }
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!roles) {
+        toast.error("This account is not an admin.");
+        await supabase.auth.signOut();
+        navigate({ to: "/admin/login" });
+        return;
+      }
+      setAuthChecked(true);
+    }
+    check();
     const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
       if (!session) navigate({ to: "/admin/login" });
     });
