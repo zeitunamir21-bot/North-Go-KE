@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Phone, LogOut } from "lucide-react";
+import { Loader2, Plus, Trash2, Phone, LogOut, Pencil } from "lucide-react";
 import { formatDateTime, formatKES } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/")({
@@ -17,10 +17,23 @@ export const Route = createFileRoute("/admin/")({
   component: AdminPage,
 });
 
+type Trip = {
+  id: string;
+  route: string;
+  departure_time: string;
+  pickup_point: string;
+  total_seats: number;
+  available_seats: number;
+  driver_name: string;
+  driver_phone: string;
+  price: number;
+};
+
 function AdminPage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const [authChecked, setAuthChecked] = useState(false);
+  const [editing, setEditing] = useState<Trip | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -115,7 +128,14 @@ function AdminPage() {
           </Button>
         </div>
 
-        <NewTripForm onCreated={refresh} />
+        <TripForm
+          key={editing?.id ?? "new"}
+          editing={editing}
+          onDone={() => {
+            setEditing(null);
+            refresh();
+          }}
+        />
 
         <section className="mt-10">
           <h2 className="font-display text-2xl font-bold">Trips</h2>
@@ -144,6 +164,16 @@ function AdminPage() {
                         {t.available_seats}/{t.total_seats} seats
                       </Badge>
                       <Badge>{formatKES(t.price)}</Badge>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => {
+                          setEditing(t as Trip);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
                       <Button
                         size="icon"
                         variant="ghost"
@@ -228,33 +258,64 @@ function AdminPage() {
   );
 }
 
-function NewTripForm({ onCreated }: { onCreated: () => void }) {
-  const [open, setOpen] = useState(false);
+function toLocalInput(iso: string) {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function TripForm({ editing, onDone }: { editing: Trip | null; onDone: () => void }) {
+  const isEdit = !!editing;
+  const [open, setOpen] = useState(isEdit);
   const [busy, setBusy] = useState(false);
-  const [form, setForm] = useState({
-    route: "Isiolo → Nairobi",
-    departure_time: "",
-    pickup_point: "Total Petrol Station, Isiolo",
-    total_seats: 7,
-    vehicle_name: "Toyota Noah",
-    driver_name: "NorthGo Driver",
-    driver_phone: "+254790179834",
-    price: 1500,
-  });
+  const [form, setForm] = useState(() => ({
+    route: editing?.route ?? "Isiolo → Nairobi",
+    departure_time: editing ? toLocalInput(editing.departure_time) : "",
+    pickup_point: editing?.pickup_point ?? "Total Petrol Station, Isiolo",
+    total_seats: editing?.total_seats ?? 7,
+    driver_name: editing?.driver_name ?? "NorthGo Driver",
+    driver_phone: editing?.driver_phone ?? "+254790179834",
+    price: editing?.price ?? 1300,
+  }));
+
+  useEffect(() => {
+    if (isEdit) setOpen(true);
+  }, [isEdit]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
-    const { error } = await supabase.from("trips").insert({
-      ...form,
-      departure_time: new Date(form.departure_time).toISOString(),
-      available_seats: form.total_seats,
-    });
-    setBusy(false);
-    if (error) return toast.error(error.message);
-    toast.success("Trip created");
+    if (isEdit && editing) {
+      const seatDelta = form.total_seats - editing.total_seats;
+      const { error } = await supabase
+        .from("trips")
+        .update({
+          route: form.route,
+          departure_time: new Date(form.departure_time).toISOString(),
+          pickup_point: form.pickup_point,
+          total_seats: form.total_seats,
+          available_seats: Math.max(0, editing.available_seats + seatDelta),
+          driver_name: form.driver_name,
+          driver_phone: form.driver_phone,
+          price: form.price,
+        })
+        .eq("id", editing.id);
+      setBusy(false);
+      if (error) return toast.error(error.message);
+      toast.success("Trip updated");
+    } else {
+      const { error } = await supabase.from("trips").insert({
+        ...form,
+        vehicle_name: "Toyota Noah",
+        departure_time: new Date(form.departure_time).toISOString(),
+        available_seats: form.total_seats,
+      });
+      setBusy(false);
+      if (error) return toast.error(error.message);
+      toast.success("Trip created");
+    }
     setOpen(false);
-    onCreated();
+    onDone();
   }
 
   if (!open) {
@@ -271,7 +332,7 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       className="mt-8 grid gap-4 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:grid-cols-2"
     >
       <div className="sm:col-span-2">
-        <h3 className="font-display text-lg font-bold">New trip</h3>
+        <h3 className="font-display text-lg font-bold">{isEdit ? "Edit trip" : "New trip"}</h3>
       </div>
       <Field label="Route">
         <Input
@@ -330,9 +391,17 @@ function NewTripForm({ onCreated }: { onCreated: () => void }) {
       </Field>
       <div className="flex gap-2 sm:col-span-2">
         <Button type="submit" disabled={busy}>
-          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Create trip
+          {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isEdit ? "Save changes" : "Create trip"}
         </Button>
-        <Button type="button" variant="ghost" onClick={() => setOpen(false)}>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={() => {
+            setOpen(false);
+            onDone();
+          }}
+        >
           Cancel
         </Button>
       </div>
