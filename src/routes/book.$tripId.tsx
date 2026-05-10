@@ -80,6 +80,23 @@ function BookPage() {
       toast.error(error?.message ?? "Could not reserve seat");
       return;
     }
+    // Open WhatsApp to driver with prefilled booking notification
+    if (trip?.driver_phone) {
+      const seatList = data.seat_numbers?.length
+        ? ` (seat${data.seat_numbers.length > 1 ? "s" : ""} #${data.seat_numbers.join(", #")})`
+        : "";
+      const message =
+        `New NorthGo booking%0A` +
+        `Trip: ${encodeURIComponent(trip.route)}%0A` +
+        `Departure: ${encodeURIComponent(formatDateTime(trip.departure_time))}%0A` +
+        `Passenger: ${encodeURIComponent(parsed.data.customer_name)}%0A` +
+        `Phone: ${encodeURIComponent(parsed.data.phone)}%0A` +
+        `Seats: ${parsed.data.seats}${encodeURIComponent(seatList)}%0A` +
+        `Pickup: ${encodeURIComponent(parsed.data.pickup_location)}%0A` +
+        `Destination: ${encodeURIComponent(parsed.data.destination)}`;
+      const driverNumber = trip.driver_phone.replace(/[^\d]/g, "");
+      window.open(`https://wa.me/${driverNumber}?text=${message}`, "_blank");
+    }
     navigate({ to: "/booking/$bookingId", params: { bookingId: data.id } });
   }
 

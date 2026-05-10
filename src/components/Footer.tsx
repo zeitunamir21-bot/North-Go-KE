@@ -14,8 +14,20 @@ export function Footer() {
           <h4 className="text-sm font-semibold uppercase tracking-wide text-secondary-foreground/60">
             Contact
           </h4>
-          <p className="mt-3 text-sm">+254 712 345 678</p>
-          <p className="text-sm text-secondary-foreground/70">hello@northgo.co.ke</p>
+          <a
+            href="tel:+254790179834"
+            className="mt-3 block text-sm hover:text-primary"
+          >
+            +254 790 179 834
+          </a>
+          <a
+            href="https://wa.me/254790179834"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-secondary-foreground/70 hover:text-primary"
+          >
+            WhatsApp
+          </a>
         </div>
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-wide text-secondary-foreground/60">
