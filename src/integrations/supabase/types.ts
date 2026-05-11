@@ -61,6 +61,39 @@ export type Database = {
           },
         ]
       }
+      drivers: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          full_name: string
+          id: string
+          phone: string
+          status: string
+          user_id: string
+          vehicle_name: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          full_name: string
+          id?: string
+          phone: string
+          status?: string
+          user_id: string
+          vehicle_name?: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          full_name?: string
+          id?: string
+          phone?: string
+          status?: string
+          user_id?: string
+          vehicle_name?: string
+        }
+        Relationships: []
+      }
       trips: {
         Row: {
           available_seats: number
@@ -70,6 +103,7 @@ export type Database = {
           driver_phone: string
           id: string
           notes: string | null
+          owner_id: string | null
           pickup_point: string
           price: number
           route: string
@@ -86,6 +120,7 @@ export type Database = {
           driver_phone: string
           id?: string
           notes?: string | null
+          owner_id?: string | null
           pickup_point: string
           price?: number
           route: string
@@ -102,6 +137,7 @@ export type Database = {
           driver_phone?: string
           id?: string
           notes?: string | null
+          owner_id?: string | null
           pickup_point?: string
           price?: number
           route?: string
@@ -145,6 +181,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_driver: { Args: { _user_id: string }; Returns: boolean }
       reserve_seats: {
         Args: {
           p_customer_name: string
