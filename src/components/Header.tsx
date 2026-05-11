@@ -30,6 +30,13 @@ export function Header() {
             Trips
           </Link>
           <Link
+            to="/driver"
+            activeProps={{ className: "text-foreground bg-accent" }}
+            className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
+          >
+            Driver
+          </Link>
+          <Link
             to="/admin"
             activeProps={{ className: "text-foreground bg-accent" }}
             className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
