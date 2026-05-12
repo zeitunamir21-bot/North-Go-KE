@@ -200,11 +200,54 @@ function DriverPage() {
                           {formatDateTime(t.departure_time)} · {t.pickup_point}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="outline">
                           {t.available_seats}/{t.total_seats} seats
                         </Badge>
                         <Badge>{formatKES(t.price)}</Badge>
+                        {t.status === "full" && <Badge variant="secondary">Fully boarded</Badge>}
+                        {t.status === "scheduled" ? (
+                          <Button
+                            size="sm"
+                            variant={t.available_seats === 0 ? "default" : "outline"}
+                            onClick={async () => {
+                              const msg =
+                                t.available_seats > 0
+                                  ? `This trip still has ${t.available_seats} open seat(s). Mark as fully boarded anyway?`
+                                  : "Mark this trip as fully boarded? It will be hidden from passenger search.";
+                              if (!confirm(msg)) return;
+                              const { error } = await supabase
+                                .from("trips")
+                                .update({ status: "full", available_seats: 0 })
+                                .eq("id", t.id);
+                              if (error) toast.error(error.message);
+                              else {
+                                toast.success("Marked fully boarded");
+                                refetchTrips();
+                              }
+                            }}
+                          >
+                            <CheckCircle2 className="mr-1 h-4 w-4" /> Full boarded
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={async () => {
+                              const { error } = await supabase
+                                .from("trips")
+                                .update({ status: "scheduled", available_seats: t.total_seats })
+                                .eq("id", t.id);
+                              if (error) toast.error(error.message);
+                              else {
+                                toast.success("Reopened");
+                                refetchTrips();
+                              }
+                            }}
+                          >
+                            <RotateCcw className="mr-1 h-4 w-4" /> Reopen
+                          </Button>
+                        )}
                         <Button
                           size="icon"
                           variant="ghost"
