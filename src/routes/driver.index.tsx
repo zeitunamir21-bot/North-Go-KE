@@ -27,6 +27,7 @@ type Trip = {
   driver_name: string;
   driver_phone: string;
   price: number;
+  status: string;
   owner_id: string | null;
 };
 
