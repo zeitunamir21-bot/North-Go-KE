@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, LogOut, Pencil, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Loader2, LogOut, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
 import { formatDateTime, formatKES } from "@/lib/format";
 
 export const Route = createFileRoute("/driver/")({
