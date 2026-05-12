@@ -28,6 +28,7 @@ function Home() {
       const { data, error } = await supabase
         .from("trips")
         .select("*")
+        .eq("status", "scheduled")
         .gte("departure_time", new Date(new Date().setHours(0, 0, 0, 0)).toISOString())
         .order("departure_time")
         .limit(3);
