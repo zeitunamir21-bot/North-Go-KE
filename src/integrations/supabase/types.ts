@@ -68,6 +68,7 @@ export type Database = {
           full_name: string
           id: string
           phone: string
+          photos: string[]
           status: string
           user_id: string
           vehicle_name: string
@@ -78,6 +79,7 @@ export type Database = {
           full_name: string
           id?: string
           phone: string
+          photos?: string[]
           status?: string
           user_id: string
           vehicle_name?: string
@@ -88,11 +90,57 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string
+          photos?: string[]
           status?: string
           user_id?: string
           vehicle_name?: string
         }
         Relationships: []
+      }
+      ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          driver_id: string
+          id: string
+          stars: number
+          trip_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          customer_name: string
+          driver_id: string
+          id?: string
+          stars: number
+          trip_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          customer_name?: string
+          driver_id?: string
+          id?: string
+          stars?: number
+          trip_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ratings_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "trips"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       trips: {
         Row: {
