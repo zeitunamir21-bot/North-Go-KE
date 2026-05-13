@@ -166,6 +166,10 @@ function DriverPage() {
           </div>
         )}
 
+        {isApproved && userId && driver && (
+          <PhotoSection driver={driver} onChanged={refetchDriver} />
+        )}
+
         {isApproved && userId && (
           <>
             <TripForm
