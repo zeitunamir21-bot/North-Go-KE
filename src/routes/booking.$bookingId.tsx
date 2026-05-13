@@ -1,11 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { CheckCircle2, Phone, MessageCircle, MapPin, Clock } from "lucide-react";
+import { useState } from "react";
+import { CheckCircle2, Phone, MessageCircle, MapPin, Clock, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { StarRating } from "@/components/StarRating";
 import { formatDateTime, formatKES } from "@/lib/format";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/booking/$bookingId")({
   head: () => ({ meta: [{ title: "Booking confirmed — NorthGo" }] }),
@@ -30,7 +34,16 @@ function ConfirmationPage() {
         .eq("id", booking.trip_id)
         .single();
       if (e2) throw e2;
-      return { booking, trip };
+      let driver: { id: string; full_name: string; photos: string[] } | null = null;
+      if (trip.owner_id) {
+        const { data: d } = await supabase
+          .from("drivers")
+          .select("id, full_name, photos")
+          .eq("user_id", trip.owner_id)
+          .maybeSingle();
+        driver = d;
+      }
+      return { booking, trip, driver };
     },
   });
 
@@ -44,7 +57,7 @@ function ConfirmationPage() {
       </div>
     );
   }
-  const { booking, trip } = data;
+  const { booking, trip, driver } = data;
   const phoneRaw = trip.driver_phone.replace(/[^\d+]/g, "");
   const wa = phoneRaw.replace(/^\+/, "");
   const total = Number(trip.price) * booking.seats;
@@ -70,7 +83,6 @@ function ConfirmationPage() {
             <Row icon={Clock} label="Departure" value={formatDateTime(trip.departure_time)} />
             <Row icon={MapPin} label="Pickup" value={booking.pickup_location} />
             <Row icon={MapPin} label="Destination" value={booking.destination} />
-            
           </div>
           <div className="grid grid-cols-3 gap-4 border-t border-border pt-4 text-sm">
             <div>
@@ -96,6 +108,22 @@ function ConfirmationPage() {
             </div>
           </div>
         </div>
+
+        {driver && driver.photos && driver.photos.length > 0 && (
+          <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+            <h3 className="font-display text-lg font-bold">Your driver's vehicle</h3>
+            <div className="mt-3 grid grid-cols-3 gap-2">
+              {driver.photos.slice(0, 6).map((url) => (
+                <img
+                  key={url}
+                  src={url}
+                  alt={`${driver.full_name}'s vehicle`}
+                  className="aspect-square w-full rounded-lg object-cover"
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-6 rounded-2xl border border-border bg-secondary p-6 text-secondary-foreground shadow-[var(--shadow-card)]">
           <h3 className="font-display text-lg font-bold">Contact your driver</h3>
@@ -129,6 +157,15 @@ function ConfirmationPage() {
           </div>
         </div>
 
+        {driver && (
+          <RateDriverCard
+            driverId={driver.id}
+            driverName={driver.full_name}
+            tripId={trip.id}
+            customerName={booking.customer_name}
+          />
+        )}
+
         <div className="mt-8 text-center">
           <Button asChild variant="ghost">
             <Link to="/">Back to home</Link>
@@ -136,6 +173,104 @@ function ConfirmationPage() {
         </div>
       </div>
       <Footer />
+    </div>
+  );
+}
+
+function RateDriverCard({
+  driverId,
+  driverName,
+  tripId,
+  customerName,
+}: {
+  driverId: string;
+  driverName: string;
+  tripId: string;
+  customerName: string;
+}) {
+  const [stars, setStars] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const { data: ratings = [], refetch } = useQuery({
+    queryKey: ["ratings", driverId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("ratings")
+        .select("*")
+        .eq("driver_id", driverId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const avg = ratings.length
+    ? ratings.reduce((s, r) => s + r.stars, 0) / ratings.length
+    : 0;
+
+  async function submit() {
+    if (stars < 1) return toast.error("Please select 1 to 5 stars");
+    setSubmitting(true);
+    const { error } = await supabase.from("ratings").insert({
+      driver_id: driverId,
+      trip_id: tripId,
+      customer_name: customerName,
+      stars,
+      comment: comment.trim() || null,
+    });
+    setSubmitting(false);
+    if (error) return toast.error(error.message);
+    toast.success("Thanks for your feedback!");
+    setStars(0);
+    setComment("");
+    refetch();
+  }
+
+  return (
+    <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <h3 className="font-display text-lg font-bold">Rate {driverName}</h3>
+          <p className="text-xs text-muted-foreground">Help other passengers travel with confidence.</p>
+        </div>
+        {ratings.length > 0 && (
+          <div className="text-right">
+            <div className="flex items-center gap-1.5">
+              <StarRating value={avg} readOnly size={16} />
+              <span className="text-sm font-semibold">{avg.toFixed(1)}</span>
+            </div>
+            <div className="text-xs text-muted-foreground">{ratings.length} review{ratings.length > 1 ? "s" : ""}</div>
+          </div>
+        )}
+      </div>
+      <div className="mt-4 space-y-3">
+        <StarRating value={stars} onChange={setStars} size={28} />
+        <Textarea
+          placeholder="Optional: tell us how the trip went…"
+          value={comment}
+          onChange={(e) => setComment(e.target.value.slice(0, 500))}
+          maxLength={500}
+          rows={3}
+        />
+        <Button onClick={submit} disabled={submitting || stars < 1} className="rounded-xl">
+          {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Submit rating
+        </Button>
+      </div>
+      {ratings.length > 0 && (
+        <div className="mt-6 space-y-3 border-t border-border pt-4">
+          {ratings.slice(0, 5).map((r) => (
+            <div key={r.id} className="rounded-xl bg-muted/40 p-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-semibold">{r.customer_name}</div>
+                <StarRating value={r.stars} readOnly size={14} />
+              </div>
+              {r.comment && <p className="mt-1 text-sm text-muted-foreground">{r.comment}</p>}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

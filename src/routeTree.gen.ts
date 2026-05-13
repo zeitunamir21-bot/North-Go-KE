@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as TripsRouteImport } from './routes/trips'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DriverIndexRouteImport } from './routes/driver.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -22,6 +24,16 @@ import { Route as AdminLoginRouteImport } from './routes/admin.login'
 const TripsRoute = TripsRouteImport.update({
   id: '/trips',
   path: '/trips',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -67,6 +79,8 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/trips': typeof TripsRoute
   '/admin/login': typeof AdminLoginRoute
   '/book/$tripId': typeof BookTripIdRoute
@@ -78,6 +92,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/trips': typeof TripsRoute
   '/admin/login': typeof AdminLoginRoute
   '/book/$tripId': typeof BookTripIdRoute
@@ -90,6 +106,8 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/forgot-password': typeof ForgotPasswordRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/trips': typeof TripsRoute
   '/admin/login': typeof AdminLoginRoute
   '/book/$tripId': typeof BookTripIdRoute
@@ -103,6 +121,8 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/forgot-password'
+    | '/reset-password'
     | '/trips'
     | '/admin/login'
     | '/book/$tripId'
@@ -114,6 +134,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/forgot-password'
+    | '/reset-password'
     | '/trips'
     | '/admin/login'
     | '/book/$tripId'
@@ -125,6 +147,8 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/forgot-password'
+    | '/reset-password'
     | '/trips'
     | '/admin/login'
     | '/book/$tripId'
@@ -137,6 +161,8 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   TripsRoute: typeof TripsRoute
   AdminLoginRoute: typeof AdminLoginRoute
   BookTripIdRoute: typeof BookTripIdRoute
@@ -154,6 +180,20 @@ declare module '@tanstack/react-router' {
       path: '/trips'
       fullPath: '/trips'
       preLoaderRoute: typeof TripsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -217,6 +257,8 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   TripsRoute: TripsRoute,
   AdminLoginRoute: AdminLoginRoute,
   BookTripIdRoute: BookTripIdRoute,

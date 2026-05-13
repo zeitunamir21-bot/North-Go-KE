@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { CheckCircle2, Loader2, LogOut, Pencil, Plus, RotateCcw, Trash2 } from "lucide-react";
+import { CheckCircle2, ImagePlus, Loader2, LogOut, Pencil, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { formatDateTime, formatKES } from "@/lib/format";
 
 export const Route = createFileRoute("/driver/")({
@@ -38,6 +38,7 @@ type Driver = {
   phone: string;
   vehicle_name: string;
   status: string;
+  photos: string[];
 };
 
 function DriverPage() {
@@ -163,6 +164,10 @@ function DriverPage() {
             <h2 className="font-display text-xl font-bold text-destructive">Application rejected</h2>
             <p className="mt-1 text-sm text-muted-foreground">Contact NorthGo support for more info.</p>
           </div>
+        )}
+
+        {isApproved && userId && driver && (
+          <PhotoSection driver={driver} onChanged={refetchDriver} />
         )}
 
         {isApproved && userId && (
@@ -395,5 +400,123 @@ function TripForm({
         </Button>
       </div>
     </form>
+  );
+}
+
+function PhotoSection({ driver, onChanged }: { driver: Driver; onChanged: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const photos = driver.photos ?? [];
+
+  async function onUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    if (photos.length + files.length > 6) {
+      toast.error("You can upload up to 6 photos.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const newUrls: string[] = [];
+      for (const file of files) {
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(`${file.name} is larger than 5MB`);
+        }
+        const ext = file.name.split(".").pop() || "jpg";
+        const path = `${driver.user_id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const { error: upErr } = await supabase.storage
+          .from("driver-photos")
+          .upload(path, file, { contentType: file.type, upsert: false });
+        if (upErr) throw new Error(upErr.message);
+        const { data: pub } = supabase.storage.from("driver-photos").getPublicUrl(path);
+        newUrls.push(pub.publicUrl);
+      }
+      const { error } = await supabase
+        .from("drivers")
+        .update({ photos: [...photos, ...newUrls] })
+        .eq("id", driver.id);
+      if (error) throw new Error(error.message);
+      toast.success("Photos uploaded");
+      onChanged();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function removePhoto(url: string) {
+    if (!confirm("Remove this photo?")) return;
+    setBusy(true);
+    try {
+      // Path = everything after `/driver-photos/`
+      const marker = "/driver-photos/";
+      const idx = url.indexOf(marker);
+      if (idx >= 0) {
+        const path = url.slice(idx + marker.length);
+        await supabase.storage.from("driver-photos").remove([path]);
+      }
+      const next = photos.filter((p) => p !== url);
+      const { error } = await supabase.from("drivers").update({ photos: next }).eq("id", driver.id);
+      if (error) throw new Error(error.message);
+      toast.success("Removed");
+      onChanged();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not remove");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="mt-8 rounded-2xl border border-border bg-card p-6">
+      <div className="flex items-center justify-between gap-2">
+        <div>
+          <h2 className="font-display text-xl font-bold">Profile photos</h2>
+          <p className="text-sm text-muted-foreground">
+            Show passengers your vehicle and yourself. Up to 6 photos, 5MB each.
+          </p>
+        </div>
+        <label className="cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            disabled={busy || photos.length >= 6}
+            onChange={onUpload}
+          />
+          <span
+            className={`inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground ${
+              busy || photos.length >= 6 ? "opacity-50" : "hover:opacity-90"
+            }`}
+          >
+            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+            Upload
+          </span>
+        </label>
+      </div>
+      {photos.length === 0 ? (
+        <div className="mt-4 rounded-xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
+          No photos yet.
+        </div>
+      ) : (
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
+          {photos.map((url) => (
+            <div key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-border">
+              <img src={url} alt="Driver vehicle" className="h-full w-full object-cover" />
+              <button
+                type="button"
+                onClick={() => removePhoto(url)}
+                className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white opacity-0 transition group-hover:opacity-100"
+                aria-label="Remove photo"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }

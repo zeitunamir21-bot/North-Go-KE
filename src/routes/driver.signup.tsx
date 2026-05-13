@@ -82,11 +82,17 @@ function DriverSignup() {
       });
 
       if (error) {
-        // Handle "already registered" by directing them to sign in
-        if (/registered|exists/i.test(error.message)) {
+        const msg = error.message.toLowerCase();
+        if (/registered|exists|already/.test(msg)) {
           toast.error("An account with this email already exists. Sign in first, then complete your application.");
           navigate({ to: "/driver/login" });
           return;
+        }
+        if (/password/.test(msg) && /short|weak|6|character/.test(msg)) {
+          throw new Error("Password is too weak. Use at least 6 characters.");
+        }
+        if (/invalid.*email/.test(msg)) {
+          throw new Error("That email address looks invalid. Please double-check it.");
         }
         throw new Error(error.message);
       }

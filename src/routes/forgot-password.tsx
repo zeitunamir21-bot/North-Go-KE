@@ -7,26 +7,33 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, KeyRound } from "lucide-react";
 
-export const Route = createFileRoute("/driver/login")({
-  head: () => ({ meta: [{ title: "Driver sign in — NorthGo" }] }),
-  component: DriverLogin,
+export const Route = createFileRoute("/forgot-password")({
+  head: () => ({ meta: [{ title: "Forgot password — NorthGo" }] }),
+  component: ForgotPassword,
 });
 
-function DriverLogin() {
+function ForgotPassword() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // Sends a 6-digit OTP code (free, via Supabase built-in email)
+    const { error } = await supabase.auth.signInWithOtp({
+      email: email.trim(),
+      options: { shouldCreateUser: false },
+    });
     setLoading(false);
     if (error) return toast.error(error.message);
-    navigate({ to: "/driver" });
+    toast.success("We sent a 6-digit code to your email.");
+    navigate({
+      to: "/reset-password",
+      search: { email: email.trim() },
+    });
   }
 
   return (
@@ -34,32 +41,27 @@ function DriverLogin() {
       <Header />
       <div className="mx-auto max-w-md px-4 py-16">
         <div className="rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-card)]">
-          <h1 className="font-display text-3xl font-bold">Driver sign in</h1>
+          <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
+            <KeyRound className="h-6 w-6" />
+          </div>
+          <h1 className="font-display text-3xl font-bold">Forgot password</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            New here?{" "}
-            <Link to="/driver/signup" className="text-primary underline">
-              Apply to drive
-            </Link>
+            Enter your email and we'll send you a 6-digit verification code.
           </p>
           <form onSubmit={onSubmit} className="mt-6 space-y-4">
             <div>
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1.5 h-11" />
-            </div>
-            <div>
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-                  Forgot password?
-                </Link>
-              </div>
-              <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1.5 h-11" />
+              <Label>Email</Label>
+              <Input required type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1.5 h-11" />
             </div>
             <Button type="submit" disabled={loading} size="lg" className="w-full rounded-xl">
               {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign in
+              Send code
             </Button>
           </form>
+          <div className="mt-6 flex justify-between text-sm text-muted-foreground">
+            <Link to="/driver/login" className="hover:text-foreground">Driver sign in</Link>
+            <Link to="/admin/login" className="hover:text-foreground">Admin sign in</Link>
+          </div>
         </div>
       </div>
       <Footer />
