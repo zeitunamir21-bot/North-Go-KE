@@ -222,6 +222,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_booking_details: { Args: { p_booking_id: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
