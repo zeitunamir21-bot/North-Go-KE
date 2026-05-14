@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -43,6 +43,7 @@ type Driver = {
 
 function DriverPage() {
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [userId, setUserId] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
   const [editing, setEditing] = useState<Trip | null>(null);
@@ -85,7 +86,7 @@ function DriverPage() {
             } else if (next.status === "rejected") {
               toast.error("Your driver application was rejected.");
             }
-            refetchDriver();
+            qc.invalidateQueries({ queryKey: ["driver", userId] });
           }
         },
       )
@@ -93,8 +94,7 @@ function DriverPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, qc]);
 
   const { data: driver, refetch: refetchDriver } = useQuery({
     queryKey: ["driver", userId],
