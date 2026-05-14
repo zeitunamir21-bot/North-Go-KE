@@ -68,6 +68,26 @@ function AdminPage() {
     };
   }, [navigate]);
 
+  // Live notification when a new driver applies
+  useEffect(() => {
+    if (!authChecked) return;
+    const channel = supabase
+      .channel("admin-driver-apps")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "drivers" },
+        (payload) => {
+          const d = payload.new as { full_name?: string };
+          toast.success(`New driver application: ${d.full_name ?? "Unknown"}`);
+          qc.invalidateQueries({ queryKey: ["admin", "drivers"] });
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [authChecked, qc]);
+
   const { data: trips = [], refetch: refetchTrips } = useQuery({
     queryKey: ["admin", "trips"],
     enabled: authChecked,

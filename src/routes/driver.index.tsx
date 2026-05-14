@@ -68,6 +68,34 @@ function DriverPage() {
     };
   }, [navigate]);
 
+  // Live notification when admin approves/rejects this driver
+  useEffect(() => {
+    if (!userId) return;
+    const channel = supabase
+      .channel(`driver-status-${userId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "drivers", filter: `user_id=eq.${userId}` },
+        (payload) => {
+          const next = payload.new as { status?: string };
+          const prev = payload.old as { status?: string };
+          if (next.status !== prev.status) {
+            if (next.status === "approved") {
+              toast.success("🎉 Your driver application was approved!");
+            } else if (next.status === "rejected") {
+              toast.error("Your driver application was rejected.");
+            }
+            refetchDriver();
+          }
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
   const { data: driver, refetch: refetchDriver } = useQuery({
     queryKey: ["driver", userId],
     enabled: !!userId,
