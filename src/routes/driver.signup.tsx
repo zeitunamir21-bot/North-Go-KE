@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
+import { notifyDriverApplication } from "@/lib/notify.functions";
 
 export const Route = createFileRoute("/driver/signup")({
   head: () => ({ meta: [{ title: "Apply to drive — NorthGo" }] }),
@@ -58,6 +59,14 @@ function DriverSignup() {
       vehicle_name: form.vehicle_name.trim(),
     });
     if (insErr) throw new Error(insErr.message);
+    // Fire-and-forget WhatsApp notification to admin
+    notifyDriverApplication({
+      data: {
+        driverName: form.full_name.trim(),
+        phone: form.phone.trim(),
+        vehicle: form.vehicle_name.trim(),
+      },
+    }).catch((err) => console.warn("WhatsApp notify failed", err));
   }
 
   async function onSubmit(e: React.FormEvent) {
