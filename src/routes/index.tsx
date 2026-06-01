@@ -24,6 +24,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
+  const qc = useQueryClient();
   const { data: trips = [] } = useQuery({
     queryKey: ["trips", "upcoming"],
     queryFn: async () => {
@@ -38,6 +39,20 @@ function Home() {
       return data;
     },
   });
+
+  // Live availability: refresh when any trip changes
+  useEffect(() => {
+    const channel = supabase
+      .channel("home-trips")
+      .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => {
+        qc.invalidateQueries({ queryKey: ["trips", "upcoming"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
 
   return (
     <div className="min-h-screen bg-background">
