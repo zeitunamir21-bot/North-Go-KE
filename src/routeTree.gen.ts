@@ -18,6 +18,7 @@ import { Route as DriverIndexRouteImport } from './routes/driver.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as DriverSignupRouteImport } from './routes/driver.signup'
 import { Route as DriverLoginRouteImport } from './routes/driver.login'
+import { Route as DriverDriverIdRouteImport } from './routes/driver.$driverId'
 import { Route as BookingBookingIdRouteImport } from './routes/booking.$bookingId'
 import { Route as BookTripIdRouteImport } from './routes/book.$tripId'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
@@ -67,6 +68,11 @@ const DriverLoginRoute = DriverLoginRouteImport.update({
   path: '/driver/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DriverDriverIdRoute = DriverDriverIdRouteImport.update({
+  id: '/driver/$driverId',
+  path: '/driver/$driverId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookingBookingIdRoute = BookingBookingIdRouteImport.update({
   id: '/booking/$bookingId',
   path: '/booking/$bookingId',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/book/$tripId': typeof BookTripIdRoute
   '/booking/$bookingId': typeof BookingBookingIdRoute
+  '/driver/$driverId': typeof DriverDriverIdRoute
   '/driver/login': typeof DriverLoginRoute
   '/driver/signup': typeof DriverSignupRoute
   '/admin/': typeof AdminIndexRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/book/$tripId': typeof BookTripIdRoute
   '/booking/$bookingId': typeof BookingBookingIdRoute
+  '/driver/$driverId': typeof DriverDriverIdRoute
   '/driver/login': typeof DriverLoginRoute
   '/driver/signup': typeof DriverSignupRoute
   '/admin': typeof AdminIndexRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/book/$tripId': typeof BookTripIdRoute
   '/booking/$bookingId': typeof BookingBookingIdRoute
+  '/driver/$driverId': typeof DriverDriverIdRoute
   '/driver/login': typeof DriverLoginRoute
   '/driver/signup': typeof DriverSignupRoute
   '/admin/': typeof AdminIndexRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/book/$tripId'
     | '/booking/$bookingId'
+    | '/driver/$driverId'
     | '/driver/login'
     | '/driver/signup'
     | '/admin/'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/book/$tripId'
     | '/booking/$bookingId'
+    | '/driver/$driverId'
     | '/driver/login'
     | '/driver/signup'
     | '/admin'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/book/$tripId'
     | '/booking/$bookingId'
+    | '/driver/$driverId'
     | '/driver/login'
     | '/driver/signup'
     | '/admin/'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   AdminLoginRoute: typeof AdminLoginRoute
   BookTripIdRoute: typeof BookTripIdRoute
   BookingBookingIdRoute: typeof BookingBookingIdRoute
+  DriverDriverIdRoute: typeof DriverDriverIdRoute
   DriverLoginRoute: typeof DriverLoginRoute
   DriverSignupRoute: typeof DriverSignupRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -251,6 +264,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DriverLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/driver/$driverId': {
+      id: '/driver/$driverId'
+      path: '/driver/$driverId'
+      fullPath: '/driver/$driverId'
+      preLoaderRoute: typeof DriverDriverIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/booking/$bookingId': {
       id: '/booking/$bookingId'
       path: '/booking/$bookingId'
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminLoginRoute: AdminLoginRoute,
   BookTripIdRoute: BookTripIdRoute,
   BookingBookingIdRoute: BookingBookingIdRoute,
+  DriverDriverIdRoute: DriverDriverIdRoute,
   DriverLoginRoute: DriverLoginRoute,
   DriverSignupRoute: DriverSignupRoute,
   AdminIndexRoute: AdminIndexRoute,
@@ -292,3 +313,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
