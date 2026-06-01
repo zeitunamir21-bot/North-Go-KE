@@ -46,7 +46,7 @@ function ConfirmationPage() {
           driver_phone: string;
           owner_id: string | null;
         };
-        driver: { id: string; full_name: string; photos: string[] } | null;
+        driver: { id: string; full_name: string; photos: string[]; vehicle_name: string | null; plate_number: string | null } | null;
       };
     },
     retry: 1,
@@ -132,19 +132,37 @@ function ConfirmationPage() {
           </div>
         </div>
 
-        {driver && driver.photos && driver.photos.length > 0 && (
+        {driver && (
           <div className="mt-6 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-            <h3 className="font-display text-lg font-bold">Your driver's vehicle</h3>
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {driver.photos.slice(0, 6).map((url) => (
-                <img
-                  key={url}
-                  src={url}
-                  alt={`${driver.full_name}'s vehicle`}
-                  className="aspect-square w-full rounded-lg object-cover"
-                />
-              ))}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="font-display text-lg font-bold">Your driver</h3>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {driver.full_name}
+                  {driver.vehicle_name && <> · {driver.vehicle_name}</>}
+                  {driver.plate_number && (
+                    <> · <span className="font-mono font-semibold text-foreground">{driver.plate_number}</span></>
+                  )}
+                </p>
+              </div>
+              <Button asChild variant="outline" size="sm" className="rounded-lg">
+                <Link to="/driver/$driverId" params={{ driverId: driver.id }}>
+                  View profile
+                </Link>
+              </Button>
             </div>
+            {driver.photos && driver.photos.length > 0 && (
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {driver.photos.slice(0, 6).map((url) => (
+                  <img
+                    key={url}
+                    src={url}
+                    alt={`${driver.full_name}'s vehicle`}
+                    className="aspect-square w-full rounded-lg object-cover"
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
 

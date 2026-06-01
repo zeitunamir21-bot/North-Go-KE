@@ -69,6 +69,7 @@ export type Database = {
           id: string
           phone: string
           photos: string[]
+          plate_number: string | null
           status: string
           user_id: string
           vehicle_name: string
@@ -80,6 +81,7 @@ export type Database = {
           id?: string
           phone: string
           photos?: string[]
+          plate_number?: string | null
           status?: string
           user_id: string
           vehicle_name?: string
@@ -91,6 +93,7 @@ export type Database = {
           id?: string
           phone?: string
           photos?: string[]
+          plate_number?: string | null
           status?: string
           user_id?: string
           vehicle_name?: string
@@ -223,6 +226,9 @@ export type Database = {
     }
     Functions: {
       get_booking_details: { Args: { p_booking_id: string }; Returns: Json }
+      get_driver_public: { Args: { p_driver_id: string }; Returns: Json }
+      get_taken_seats: { Args: { p_trip_id: string }; Returns: number[] }
+      get_top_reviews: { Args: { p_limit?: number }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -231,34 +237,64 @@ export type Database = {
         Returns: boolean
       }
       is_approved_driver: { Args: { _user_id: string }; Returns: boolean }
-      reserve_seats: {
-        Args: {
-          p_customer_name: string
-          p_destination: string
-          p_phone: string
-          p_pickup_location: string
-          p_seats: number
-          p_trip_id: string
-        }
-        Returns: {
-          booking_status: string
-          created_at: string
-          customer_name: string
-          destination: string
-          id: string
-          phone: string
-          pickup_location: string
-          seat_numbers: number[]
-          seats: number
-          trip_id: string
-        }
-        SetofOptions: {
-          from: "*"
-          to: "bookings"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
+      reserve_seats:
+        | {
+            Args: {
+              p_customer_name: string
+              p_destination: string
+              p_phone: string
+              p_pickup_location: string
+              p_seats: number
+              p_trip_id: string
+            }
+            Returns: {
+              booking_status: string
+              created_at: string
+              customer_name: string
+              destination: string
+              id: string
+              phone: string
+              pickup_location: string
+              seat_numbers: number[]
+              seats: number
+              trip_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bookings"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              p_customer_name: string
+              p_destination: string
+              p_phone: string
+              p_pickup_location: string
+              p_seat_numbers?: number[]
+              p_seats: number
+              p_trip_id: string
+            }
+            Returns: {
+              booking_status: string
+              created_at: string
+              customer_name: string
+              destination: string
+              id: string
+              phone: string
+              pickup_location: string
+              seat_numbers: number[]
+              seats: number
+              trip_id: string
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bookings"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
     }
     Enums: {
       app_role: "admin" | "user" | "driver"

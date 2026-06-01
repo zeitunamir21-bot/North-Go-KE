@@ -37,6 +37,7 @@ type Driver = {
   full_name: string;
   phone: string;
   vehicle_name: string;
+  plate_number: string | null;
   status: string;
   photos: string[];
 };
@@ -195,7 +196,10 @@ function DriverPage() {
         )}
 
         {isApproved && userId && driver && (
-          <PhotoSection driver={driver} onChanged={refetchDriver} />
+          <>
+            <ProfileEditor driver={driver} onChanged={refetchDriver} />
+            <PhotoSection driver={driver} onChanged={refetchDriver} />
+          </>
         )}
 
         {isApproved && userId && (
@@ -548,3 +552,53 @@ function PhotoSection({ driver, onChanged }: { driver: Driver; onChanged: () => 
     </section>
   );
 }
+
+function ProfileEditor({ driver, onChanged }: { driver: Driver; onChanged: () => void }) {
+  const [plate, setPlate] = useState(driver.plate_number ?? "");
+  const [vehicle, setVehicle] = useState(driver.vehicle_name);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    setBusy(true);
+    const { error } = await supabase
+      .from("drivers")
+      .update({
+        plate_number: plate.trim().toUpperCase() || null,
+        vehicle_name: vehicle.trim() || driver.vehicle_name,
+      })
+      .eq("id", driver.id);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Profile updated");
+    onChanged();
+  }
+
+  return (
+    <section className="mt-8 rounded-2xl border border-border bg-card p-6">
+      <h2 className="font-display text-xl font-bold">Vehicle details</h2>
+      <p className="text-sm text-muted-foreground">
+        Shown to passengers on the booking confirmation and your public profile.
+      </p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <Label className="mb-1.5 block">Vehicle (matatu / van type)</Label>
+          <Input value={vehicle} onChange={(e) => setVehicle(e.target.value)} maxLength={60} />
+        </div>
+        <div>
+          <Label className="mb-1.5 block">Plate number</Label>
+          <Input
+            value={plate}
+            onChange={(e) => setPlate(e.target.value)}
+            placeholder="KDA 123A"
+            maxLength={16}
+            className="font-mono uppercase"
+          />
+        </div>
+      </div>
+      <Button onClick={save} disabled={busy} className="mt-4 rounded-xl">
+        {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Save details
+      </Button>
+    </section>
+  );
+}
+

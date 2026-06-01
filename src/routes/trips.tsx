@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -18,6 +18,7 @@ export const Route = createFileRoute("/trips")({
 });
 
 function TripsPage() {
+  const qc = useQueryClient();
   const { data: trips = [], isLoading } = useQuery({
     queryKey: ["trips", "all-upcoming"],
     queryFn: async () => {
@@ -31,6 +32,18 @@ function TripsPage() {
       return data;
     },
   });
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("trips-page")
+      .on("postgres_changes", { event: "*", schema: "public", table: "trips" }, () => {
+        qc.invalidateQueries({ queryKey: ["trips", "all-upcoming"] });
+      })
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
 
   const grouped = useMemo(() => {
     const g: Record<string, typeof trips> = {};
