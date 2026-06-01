@@ -181,6 +181,10 @@ function Home() {
         )}
       </section>
 
+      <ReviewsSection />
+
+
+
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-24">
         <div
