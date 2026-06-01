@@ -1,14 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Clock, MapPin, Loader2 } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Loader2, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { SeatPicker } from "@/components/SeatPicker";
 import { toast } from "sonner";
 import { formatDateTime, formatKES } from "@/lib/format";
 
@@ -27,19 +29,20 @@ const bookingSchema = z.object({
     .regex(/^[0-9+\s-]+$/, "Phone can only contain digits, +, spaces, and hyphens"),
   pickup_location: z.string().trim().min(2, "Required").max(120),
   destination: z.string().trim().min(2, "Required").max(120),
-  seats: z.number().int().min(1).max(10),
 });
 
 function BookPage() {
   const { tripId } = Route.useParams();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
+  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+  const [seatCount, setSeatCount] = useState(1);
   const [form, setForm] = useState({
     customer_name: "",
     phone: "",
     pickup_location: "",
     destination: "",
-    seats: 1,
   });
 
   const { data: trip, isLoading } = useQuery({
@@ -55,6 +58,55 @@ function BookPage() {
     },
   });
 
+  const { data: taken = [], refetch: refetchTaken } = useQuery({
+    queryKey: ["taken-seats", tripId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_taken_seats", { p_trip_id: tripId });
+      if (error) throw error;
+      return (data ?? []) as number[];
+    },
+    refetchInterval: 15000,
+  });
+
+  // Realtime: invalidate when trip seat count changes or new bookings arrive
+  useEffect(() => {
+    const channel = supabase
+      .channel(`book-${tripId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "trips", filter: `id=eq.${tripId}` },
+        () => {
+          qc.invalidateQueries({ queryKey: ["trip", tripId] });
+          refetchTaken();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [tripId, qc, refetchTaken]);
+
+  // Keep selected seats in sync if seat count changes
+  useEffect(() => {
+    setSelectedSeats((prev) => prev.slice(0, seatCount));
+  }, [seatCount]);
+
+  // Clear any selected-then-taken seat
+  useEffect(() => {
+    setSelectedSeats((prev) => prev.filter((s) => !taken.includes(s)));
+  }, [taken]);
+
+  function toggleSeat(seat: number) {
+    setSelectedSeats((prev) => {
+      if (prev.includes(seat)) return prev.filter((s) => s !== seat);
+      if (prev.length >= seatCount) return prev;
+      return [...prev, seat].sort((a, b) => a - b);
+    });
+  }
+
+  const seatsLeft = trip?.available_seats ?? 0;
+  const lowSeats = useMemo(() => seatsLeft > 0 && seatsLeft <= 2, [seatsLeft]);
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     const parsed = bookingSchema.safeParse(form);
@@ -62,7 +114,11 @@ function BookPage() {
       toast.error(parsed.error.issues[0].message);
       return;
     }
-    if (trip && parsed.data.seats > trip.available_seats) {
+    if (selectedSeats.length !== seatCount) {
+      toast.error(`Pick ${seatCount} seat${seatCount > 1 ? "s" : ""} from the map`);
+      return;
+    }
+    if (trip && seatCount > trip.available_seats) {
       toast.error(`Only ${trip.available_seats} seat(s) left`);
       return;
     }
@@ -71,16 +127,17 @@ function BookPage() {
       p_trip_id: tripId,
       p_customer_name: parsed.data.customer_name,
       p_phone: parsed.data.phone,
-      p_seats: parsed.data.seats,
+      p_seats: seatCount,
       p_pickup_location: parsed.data.pickup_location,
       p_destination: parsed.data.destination,
+      p_seat_numbers: selectedSeats,
     });
     setSubmitting(false);
     if (error || !data) {
       toast.error(error?.message ?? "Could not reserve seat");
+      refetchTaken();
       return;
     }
-    // Open WhatsApp to driver with prefilled booking notification
     if (trip?.driver_phone) {
       const seatList = data.seat_numbers?.length
         ? ` (seat${data.seat_numbers.length > 1 ? "s" : ""} #${data.seat_numbers.join(", #")})`
@@ -91,7 +148,7 @@ function BookPage() {
         `Departure: ${encodeURIComponent(formatDateTime(trip.departure_time))}%0A` +
         `Passenger: ${encodeURIComponent(parsed.data.customer_name)}%0A` +
         `Phone: ${encodeURIComponent(parsed.data.phone)}%0A` +
-        `Seats: ${parsed.data.seats}${encodeURIComponent(seatList)}%0A` +
+        `Seats: ${seatCount}${encodeURIComponent(seatList)}%0A` +
         `Pickup: ${encodeURIComponent(parsed.data.pickup_location)}%0A` +
         `Destination: ${encodeURIComponent(parsed.data.destination)}`;
       const driverNumber = trip.driver_phone.replace(/[^\d]/g, "");
@@ -103,7 +160,7 @@ function BookPage() {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="mx-auto max-w-3xl px-4 py-10">
+      <div className="mx-auto max-w-5xl px-4 py-10">
         <Link
           to="/trips"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
@@ -112,36 +169,74 @@ function BookPage() {
         </Link>
 
         <h1 className="mt-4 font-display text-4xl font-bold tracking-tight">Reserve your seat</h1>
-        <p className="mt-1 text-muted-foreground">No payment required. Pay on board.</p>
+        <p className="mt-1 text-muted-foreground">Pick your seats, fill your details, pay on board.</p>
 
         {isLoading || !trip ? (
           <div className="mt-10 text-muted-foreground">Loading trip…</div>
         ) : (
-          <div className="mt-8 grid gap-8 md:grid-cols-[1fr,1.2fr]">
-            {/* Trip summary */}
-            <aside className="h-fit rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
-              <h2 className="font-display text-xl font-bold">{trip.route}</h2>
-              <div className="mt-4 space-y-3 text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary" />
-                  {formatDateTime(trip.departure_time)}
+          <div className="mt-8 grid gap-8 lg:grid-cols-[1fr,1.3fr]">
+            {/* LEFT: trip summary + live availability */}
+            <aside className="h-fit space-y-5">
+              <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+                <div className="flex items-start justify-between gap-3">
+                  <h2 className="font-display text-xl font-bold">{trip.route}</h2>
+                  <Badge
+                    className={
+                      seatsLeft === 0
+                        ? "bg-destructive text-destructive-foreground"
+                        : lowSeats
+                          ? "bg-orange-500 text-white"
+                          : "bg-success text-success-foreground"
+                    }
+                  >
+                    {seatsLeft === 0 ? "FULL" : `${seatsLeft} seat${seatsLeft > 1 ? "s" : ""} left`}
+                  </Badge>
                 </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-primary" />
-                  {trip.pickup_point}
+                <div className="mt-4 space-y-3 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    {formatDateTime(trip.departure_time)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    {trip.pickup_point}
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <User className="h-4 w-4 text-primary" />
+                    {trip.driver_name} · {trip.vehicle_name}
+                  </div>
+                </div>
+                <div className="mt-5 border-t border-border pt-4">
+                  <div className="text-xs text-muted-foreground">Price per seat</div>
+                  <div className="font-display text-2xl font-bold">{formatKES(trip.price)}</div>
                 </div>
               </div>
-              <div className="mt-5 border-t border-border pt-4">
-                <div className="text-xs text-muted-foreground">Price per seat</div>
-                <div className="font-display text-2xl font-bold">{formatKES(trip.price)}</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {trip.available_seats} of {trip.total_seats} seats left
+
+              {/* SEAT PICKER */}
+              <div>
+                <div className="mb-2 flex items-center justify-between">
+                  <Label className="text-sm font-semibold">
+                    Choose your seat{seatCount > 1 ? "s" : ""}
+                  </Label>
+                  <div className="text-xs text-muted-foreground">
+                    {selectedSeats.length}/{seatCount} picked
+                  </div>
                 </div>
+                <SeatPicker
+                  totalSeats={trip.total_seats}
+                  taken={taken}
+                  selected={selectedSeats}
+                  onToggle={toggleSeat}
+                  maxSelect={seatCount}
+                />
               </div>
             </aside>
 
-            {/* Form */}
-            <form onSubmit={onSubmit} className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+            {/* RIGHT: form */}
+            <form
+              onSubmit={onSubmit}
+              className="space-y-4 rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
+            >
               <div>
                 <Label htmlFor="name">Full name</Label>
                 <Input
@@ -199,27 +294,44 @@ function BookPage() {
                   id="seats"
                   type="number"
                   min={1}
-                  max={Math.max(1, trip.available_seats)}
-                  value={form.seats}
-                  onChange={(e) => setForm({ ...form, seats: Number(e.target.value) || 1 })}
+                  max={Math.max(1, seatsLeft)}
+                  value={seatCount}
+                  onChange={(e) =>
+                    setSeatCount(Math.max(1, Math.min(Number(e.target.value) || 1, seatsLeft || 1)))
+                  }
                   className="mt-1.5 h-11"
                 />
+                {selectedSeats.length > 0 && (
+                  <p className="mt-1.5 text-xs text-muted-foreground">
+                    Selected:{" "}
+                    {selectedSeats.map((s) => (
+                      <span key={s} className="mr-1 inline-flex h-5 min-w-5 items-center justify-center rounded bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                        #{s}
+                      </span>
+                    ))}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-between border-t border-border pt-4">
                 <div className="text-sm text-muted-foreground">
                   Total ·{" "}
                   <span className="font-semibold text-foreground">
-                    {formatKES(Number(trip.price) * form.seats)}
+                    {formatKES(Number(trip.price) * seatCount)}
                   </span>
                 </div>
-                <Button type="submit" size="lg" disabled={submitting} className="rounded-xl">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={submitting || selectedSeats.length !== seatCount || seatsLeft === 0}
+                  className="rounded-xl"
+                >
                   {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Reserve seat
+                  Reserve {selectedSeats.length > 0 ? `seat${selectedSeats.length > 1 ? "s" : ""}` : ""}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                You'll receive a confirmation. The driver will contact you before departure.
+                Live availability — seat status updates in real time as others book.
               </p>
             </form>
           </div>
