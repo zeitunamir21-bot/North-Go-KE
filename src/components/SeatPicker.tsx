@@ -21,7 +21,7 @@ export function SeatPicker({
       {/* Driver row */}
       <div className="mb-4 flex items-center justify-between border-b border-dashed border-border pb-3">
         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <Steering className="h-4 w-4" />
+          <CircleDot className="h-4 w-4" />
           Driver
         </div>
         <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
