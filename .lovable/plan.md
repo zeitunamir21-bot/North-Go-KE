@@ -1,70 +1,36 @@
-## Goal
+# Show driver profile on the booking page
 
-Add an automated test suite that verifies Row-Level Security on `trips` and `bookings` behaves correctly for each role: anonymous (passenger), authenticated non-driver, approved driver (trip owner + non-owner), and admin.
+Right now `/book/$tripId` only shows the driver's name and vehicle as a single line of text. Passengers can't see who they're about to ride with until after they complete the booking.
 
-## Approach
+## What to build
 
-Use **Vitest** (already compatible with the Vite toolchain) with the **Supabase JS client** pointed at the live Cloud project, exercising real RLS — that's the only way to actually verify policies. Tests use the service-role key to seed/cleanup, and per-role anon-key clients to assert allow/deny.
+Add a "Your driver" card to the left column of `src/routes/book.$tripId.tsx`, above (or below) the trip summary, showing:
 
-```text
-tests/
-  rls/
-    helpers.ts          # client factories, seed/cleanup, role provisioning
-    trips.rls.test.ts
-    bookings.rls.test.ts
-  setup.ts              # loads env, guards against running without service key
-vitest.config.ts        # node env, includes tests/**, excludes from app build
-```
+- Driver photo (first photo, fallback to initial)
+- Full name + link to full `/driver/$driverId` profile
+- Vehicle name + plate number badge
+- Star rating + review count (if any)
+- Up to 2 most recent reviews (collapsed snippet)
+- "View full profile" button → `/driver/$driverId`
 
-### Test users (created once per run, cleaned up after)
+Visual style matches the existing trip-summary card (same `rounded-2xl border bg-card` treatment).
 
-Created via `supabaseAdmin.auth.admin.createUser` with `email_confirm: true`:
-- `passenger@test.local` — no role
-- `driver-owner@test.local` — inserted into `drivers` then status flipped to `approved` (trigger grants `driver` role)
-- `driver-other@test.local` — same, different user
-- `admin@test.local` — row inserted into `user_roles` with `admin`
+## How it works (technical)
 
-Each user gets a dedicated `supabase` client signed in with their session; the anonymous client uses no session.
+Drivers table RLS only lets a user see their own row, so we can't query `drivers` directly from a passenger session. We need a SECURITY DEFINER RPC that resolves the driver from a trip ID.
 
-### Trips coverage
+1. **New migration** — add RPC `get_trip_driver_public(p_trip_id uuid) returns jsonb`:
+   - Look up `trips.owner_id` for the given trip
+   - Find the matching approved row in `drivers` (by `user_id`)
+   - Compute rating avg/count from `ratings` and grab the 2 most recent reviews
+   - Return `{ driver: { id, full_name, vehicle_name, plate_number, photos }, rating: { avg, count }, reviews: [...] }`
+   - Returns `null` if trip has no owner or driver not approved (card simply hides)
 
-| Actor | SELECT all trips | INSERT (owner=self) | INSERT (owner=other) | UPDATE own | UPDATE other's | DELETE own | DELETE other's |
-|---|---|---|---|---|---|---|---|
-| anon | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| passenger | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ |
-| driver-owner | ✅ | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ |
-| admin | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+2. **`src/routes/book.$tripId.tsx`** — add a `useQuery` that calls the new RPC keyed by `tripId`, render a new `DriverCard` component inline in the left column. Hide the card when the RPC returns null. The existing "driver_name · vehicle_name" line stays as a compact fallback when no profile exists.
 
-### Bookings coverage
+No changes to seat picker, reservation flow, or WhatsApp notification.
 
-| Actor | INSERT (via reserve_seats RPC) | SELECT own-trip rows | SELECT other rows | UPDATE | DELETE |
-|---|---|---|---|---|---|
-| anon | ✅ | ❌ | ❌ | ❌ | ❌ |
-| passenger | ✅ | ❌ | ❌ | ❌ | ❌ |
-| driver-owner | ✅ | ✅ (only bookings on own trips) | ❌ | ❌ | ❌ |
-| admin | ✅ | ✅ (all) | — | ✅ | ✅ |
+## Files
 
-Also verify `get_booking_details` RPC masks the phone for anon and returns full phone for admin.
-
-### Seed/cleanup discipline
-
-- Every test seeds via `supabaseAdmin` with a `__rls_test__` tag in `notes`/`customer_name` so cleanup is surgical.
-- `afterAll` deletes seeded bookings → trips → drivers → users in dependency order. No reliance on cascade.
-
-## Tooling
-
-- `bun add -d vitest @vitest/ui` (Vitest only; Supabase client already installed).
-- New script in `package.json`: `"test:rls": "vitest run tests/rls"`.
-- Tests read `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` from `process.env` (already present in `.env`).
-- Test files excluded from production build via `vitest.config.ts` (separate from `vite.config.ts`).
-
-## Out of scope
-
-- Tests for `drivers`, `ratings`, `user_roles` tables (can be added later in the same harness).
-- CI wiring — leave as a manual `bun run test:rls` command for now.
-- Frontend/component tests.
-
-## Risks
-
-- Tests hit the live Cloud DB. Mitigated by tagged rows + ordered cleanup in `afterAll` and `afterEach`. If a run is interrupted, leftover rows are all tagged `__rls_test__` and easy to purge.
-- Auth signup rate limits — created users are reused across the suite (one `beforeAll`), not per-test.
+- New migration: `get_trip_driver_public` RPC
+- Edit: `src/routes/book.$tripId.tsx` (add query + driver card UI)

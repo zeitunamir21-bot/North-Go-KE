@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
-import { ArrowLeft, Clock, MapPin, Loader2, User } from "lucide-react";
+import { ArrowLeft, Clock, MapPin, Loader2, User, Car, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -11,8 +11,27 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { SeatPicker } from "@/components/SeatPicker";
+import { StarRating } from "@/components/StarRating";
 import { toast } from "sonner";
 import { formatDateTime, formatKES } from "@/lib/format";
+
+type TripDriverProfile = {
+  driver: {
+    id: string;
+    full_name: string;
+    vehicle_name: string;
+    plate_number: string | null;
+    photos: string[];
+  };
+  rating: { avg: number; count: number };
+  reviews: Array<{
+    id: string;
+    customer_name: string;
+    stars: number;
+    comment: string | null;
+    created_at: string;
+  }>;
+};
 
 export const Route = createFileRoute("/book/$tripId")({
   head: () => ({ meta: [{ title: "Reserve your seat — NorthGo" }] }),
@@ -66,6 +85,15 @@ function BookPage() {
       return (data ?? []) as number[];
     },
     refetchInterval: 15000,
+  });
+
+  const { data: driverProfile } = useQuery({
+    queryKey: ["trip-driver", tripId],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_trip_driver_public", { p_trip_id: tripId });
+      if (error) throw error;
+      return (data as TripDriverProfile | null) ?? null;
+    },
   });
 
   // Realtime: invalidate when trip seat count changes or new bookings arrive
@@ -211,6 +239,81 @@ function BookPage() {
                   <div className="font-display text-2xl font-bold">{formatKES(trip.price)}</div>
                 </div>
               </div>
+
+              {/* DRIVER PROFILE */}
+              {driverProfile && (
+                <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="font-display text-base font-bold">Your driver</h3>
+                    <Link
+                      to="/driver/$driverId"
+                      params={{ driverId: driverProfile.driver.id }}
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >
+                      View profile →
+                    </Link>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
+                      {driverProfile.driver.photos?.[0] ? (
+                        <img
+                          src={driverProfile.driver.photos[0]}
+                          alt={driverProfile.driver.full_name}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xl font-bold text-muted-foreground">
+                          {driverProfile.driver.full_name.charAt(0)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-semibold">{driverProfile.driver.full_name}</div>
+                      {driverProfile.rating.count > 0 ? (
+                        <div className="mt-1 flex items-center gap-1.5">
+                          <StarRating value={driverProfile.rating.avg} readOnly size={14} />
+                          <span className="text-xs font-semibold">
+                            {driverProfile.rating.avg.toFixed(1)}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            ({driverProfile.rating.count})
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-1 text-xs text-muted-foreground">No reviews yet</div>
+                      )}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <Badge variant="outline" className="gap-1 text-xs">
+                          <Car className="h-3 w-3" /> {driverProfile.driver.vehicle_name}
+                        </Badge>
+                        {driverProfile.driver.plate_number && (
+                          <Badge variant="outline" className="gap-1 font-mono text-xs">
+                            <Hash className="h-3 w-3" /> {driverProfile.driver.plate_number}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  {driverProfile.reviews.length > 0 && (
+                    <div className="mt-4 space-y-2 border-t border-border pt-4">
+                      {driverProfile.reviews.slice(0, 2).map((r) => (
+                        <div key={r.id} className="rounded-lg bg-muted/40 p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold">{r.customer_name}</span>
+                            <StarRating value={r.stars} readOnly size={12} />
+                          </div>
+                          {r.comment && (
+                            <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                              "{r.comment}"
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
 
               {/* SEAT PICKER */}
               <div>
