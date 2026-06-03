@@ -199,6 +199,7 @@ function MyBookingsPage() {
         )}
       </div>
       <Footer />
+      <BottomNav />
     </div>
   );
 }
