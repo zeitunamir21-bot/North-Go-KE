@@ -151,6 +151,7 @@ function BookPage() {
       return;
     }
     setSubmitting(true);
+    const { data: sessionData } = await supabase.auth.getSession();
     const { data, error } = await supabase.rpc("reserve_seats", {
       p_trip_id: tripId,
       p_customer_name: parsed.data.customer_name,
@@ -159,6 +160,7 @@ function BookPage() {
       p_pickup_location: parsed.data.pickup_location,
       p_destination: parsed.data.destination,
       p_seat_numbers: selectedSeats,
+      p_user_id: sessionData.session?.user.id ?? null,
     });
     setSubmitting(false);
     if (error || !data) {
