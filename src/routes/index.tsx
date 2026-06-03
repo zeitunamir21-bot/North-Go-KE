@@ -66,7 +66,7 @@ function Home() {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-28 md:pb-0">
       <Header />
 
       {/* HERO */}
