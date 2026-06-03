@@ -25,7 +25,9 @@ export type Database = {
           pickup_location: string
           seat_numbers: number[]
           seats: number
+          status: string
           trip_id: string
+          user_id: string | null
         }
         Insert: {
           booking_status?: string
@@ -37,7 +39,9 @@ export type Database = {
           pickup_location: string
           seat_numbers?: number[]
           seats?: number
+          status?: string
           trip_id: string
+          user_id?: string | null
         }
         Update: {
           booking_status?: string
@@ -49,7 +53,9 @@ export type Database = {
           pickup_location?: string
           seat_numbers?: number[]
           seats?: number
+          status?: string
           trip_id?: string
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -225,8 +231,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cancel_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          booking_status: string
+          created_at: string
+          customer_name: string
+          destination: string
+          id: string
+          phone: string
+          pickup_location: string
+          seat_numbers: number[]
+          seats: number
+          status: string
+          trip_id: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_booking_details: { Args: { p_booking_id: string }; Returns: Json }
       get_driver_public: { Args: { p_driver_id: string }; Returns: Json }
+      get_my_bookings: { Args: never; Returns: Json }
+      get_platform_stats: { Args: never; Returns: Json }
       get_taken_seats: { Args: { p_trip_id: string }; Returns: number[] }
       get_top_reviews: { Args: { p_limit?: number }; Returns: Json }
       get_trip_driver_public: { Args: { p_trip_id: string }; Returns: Json }
@@ -258,7 +289,9 @@ export type Database = {
               pickup_location: string
               seat_numbers: number[]
               seats: number
+              status: string
               trip_id: string
+              user_id: string | null
             }
             SetofOptions: {
               from: "*"
@@ -287,7 +320,41 @@ export type Database = {
               pickup_location: string
               seat_numbers: number[]
               seats: number
+              status: string
               trip_id: string
+              user_id: string | null
+            }
+            SetofOptions: {
+              from: "*"
+              to: "bookings"
+              isOneToOne: true
+              isSetofReturn: false
+            }
+          }
+        | {
+            Args: {
+              p_customer_name: string
+              p_destination: string
+              p_phone: string
+              p_pickup_location: string
+              p_seat_numbers: number[]
+              p_seats: number
+              p_trip_id: string
+              p_user_id: string
+            }
+            Returns: {
+              booking_status: string
+              created_at: string
+              customer_name: string
+              destination: string
+              id: string
+              phone: string
+              pickup_location: string
+              seat_numbers: number[]
+              seats: number
+              status: string
+              trip_id: string
+              user_id: string | null
             }
             SetofOptions: {
               from: "*"

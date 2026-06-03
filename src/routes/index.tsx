@@ -8,16 +8,27 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { TripCard } from "@/components/TripCard";
 import { ReviewsSection } from "@/components/ReviewsSection";
-import heroImg from "@/assets/hero.jpg";
+import { StatsRow } from "@/components/StatsRow";
+import { TrustBadges } from "@/components/TrustBadges";
+import { RouteInfo } from "@/components/RouteInfo";
+import { FAQ } from "@/components/FAQ";
+import { ContactSupport } from "@/components/ContactSupport";
+import { BottomNav } from "@/components/BottomNav";
+import { StickyBookCTA } from "@/components/StickyBookCTA";
+import heroImg from "@/assets/hero-van.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "NorthGo — Travel Between Isiolo and Nairobi Easily" },
+      { title: "Isiolo to Nairobi Booking — NorthGo Matatu & Van Travel Kenya" },
       {
         name: "description",
-        content: "Reserve a seat in minutes. Daily trips. Pay on boarding via cash or M-Pesa. Trusted, comfortable rides.",
+        content:
+          "Book your Isiolo to Nairobi seat online in minutes. Daily matatu and van trips, real-time seat availability, verified Kenyan drivers, pay on board.",
       },
+      { name: "keywords", content: "Isiolo to Nairobi booking, Matatu booking Kenya, Nairobi Isiolo travel, book transport online Kenya, Isiolo Nairobi van" },
+      { property: "og:title", content: "Book Your Isiolo ⇄ Nairobi Seat in Minutes — NorthGo" },
+      { property: "og:description", content: "Safe, reliable, and affordable Kenyan intercity travel with real-time seat availability." },
     ],
   }),
   component: Home,
@@ -55,7 +66,7 @@ function Home() {
 
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-28 md:pb-0">
       <Header />
 
       {/* HERO */}
@@ -78,12 +89,11 @@ function Home() {
               Daily trips · Isiolo ⇄ Nairobi
             </span>
             <h1 className="mt-5 font-display text-5xl font-bold leading-[1.05] tracking-tight md:text-7xl">
-              Travel between <span className="text-primary">Isiolo</span> and{" "}
-              <span className="text-primary">Nairobi</span> easily.
+              Book your <span className="text-primary">Isiolo ⇄ Nairobi</span> seat in minutes.
             </h1>
             <p className="mt-5 max-w-xl text-lg text-white/85">
-              Reserve your seat in minutes. Safe, reliable, comfortable. Pay on board — no upfront
-              payment.
+              Safe, reliable, and affordable travel with real-time seat availability. Verified
+              Kenyan drivers, transparent fares, pay on board.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="h-14 rounded-xl px-8 text-base font-semibold">
@@ -103,9 +113,9 @@ function Home() {
             <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/85">
               {[
                 "Daily Trips",
-                "Reserve Without Paying First",
-                "Trusted Driver",
-                "Comfortable Travel",
+                "Live Seat Availability",
+                "Verified Drivers",
+                "Pay on Board",
               ].map((t) => (
                 <li key={t} className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-primary" />
@@ -117,8 +127,14 @@ function Home() {
         </div>
       </section>
 
+      {/* STATS */}
+      <StatsRow />
+
+      {/* TRUST BADGES */}
+      <TrustBadges />
+
       {/* WHY US */}
-      <section className="mx-auto max-w-6xl px-4 py-20">
+      <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-12 max-w-2xl">
           <h2 className="font-display text-4xl font-bold tracking-tight">Why ride with NorthGo</h2>
           <p className="mt-3 text-muted-foreground">
@@ -127,26 +143,11 @@ function Home() {
         </div>
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            {
-              icon: Wallet,
-              title: "Pay on board",
-              desc: "Cash or M-Pesa after boarding. No deposits, no risk.",
-            },
-            {
-              icon: Clock,
-              title: "Always on time",
-              desc: "Daily departures. We leave when we say we will.",
-            },
-            {
-              icon: ShieldCheck,
-              title: "Trusted drivers",
-              desc: "Experienced, vetted, and friendly drivers you can call directly.",
-            },
+            { icon: Wallet, title: "Pay on board", desc: "Cash or M-Pesa after boarding. No deposits, no risk." },
+            { icon: Clock, title: "Always on time", desc: "Daily departures. We leave when we say we will." },
+            { icon: ShieldCheck, title: "Trusted drivers", desc: "Experienced, vetted, and friendly drivers you can call directly." },
           ].map(({ icon: Icon, title, desc }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
-            >
+            <div key={title} className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent text-primary">
                 <Icon className="h-6 w-6" />
               </div>
@@ -157,8 +158,11 @@ function Home() {
         </div>
       </section>
 
+      {/* ROUTE INFO */}
+      <RouteInfo />
+
       {/* TRIPS PREVIEW */}
-      <section className="mx-auto max-w-6xl px-4 pb-20">
+      <section className="mx-auto max-w-6xl px-4 py-16">
         <div className="mb-8 flex items-end justify-between">
           <div>
             <h2 className="font-display text-4xl font-bold tracking-tight">Upcoming trips</h2>
@@ -182,8 +186,8 @@ function Home() {
       </section>
 
       <ReviewsSection />
-
-
+      <FAQ />
+      <ContactSupport />
 
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-24">
@@ -195,20 +199,17 @@ function Home() {
             Ready to ride? Reserve in 30 seconds.
           </h2>
           <p className="mt-3 max-w-xl text-white/90">
-            No app, no login. Just your name and phone — we'll confirm your seat instantly.
+            No app, no login required. Just your name and phone — we'll confirm your seat instantly.
           </p>
-          <Button
-            asChild
-            size="lg"
-            variant="secondary"
-            className="mt-8 h-14 rounded-xl px-8 text-base font-semibold"
-          >
+          <Button asChild size="lg" variant="secondary" className="mt-8 h-14 rounded-xl px-8 text-base font-semibold">
             <Link to="/trips">Book your seat</Link>
           </Button>
         </div>
       </section>
 
       <Footer />
+      <StickyBookCTA />
+      <BottomNav />
     </div>
   );
 }

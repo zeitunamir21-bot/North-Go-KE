@@ -1,7 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { MapPin } from "lucide-react";
+import { MapPin, User as UserIcon } from "lucide-react";
+import { useAuth } from "@/lib/useAuth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Header() {
+  const { session } = useAuth();
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -13,45 +16,45 @@ export function Header() {
             North<span className="text-primary">Go</span>
           </span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm font-medium">
-          <Link
-            to="/"
-            activeOptions={{ exact: true }}
-            activeProps={{ className: "text-foreground bg-accent" }}
-            className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
-          >
-            Home
-          </Link>
-          <Link
-            to="/trips"
-            activeProps={{ className: "text-foreground bg-accent" }}
-            className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
-          >
-            Trips
-          </Link>
-          <Link
-            to="/history"
-            activeProps={{ className: "text-foreground bg-accent" }}
-            className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
-          >
-            History
-          </Link>
-          <Link
-            to="/driver"
-            activeProps={{ className: "text-foreground bg-accent" }}
-            className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
-          >
-            Driver
-          </Link>
-          <Link
-            to="/admin"
-            activeProps={{ className: "text-foreground bg-accent" }}
-            className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
-          >
-            Admin
-          </Link>
+        <nav className="hidden items-center gap-1 text-sm font-medium md:flex">
+          <NavLink to="/" exact>Home</NavLink>
+          <NavLink to="/trips">Trips</NavLink>
+          <NavLink to="/my-bookings">My Bookings</NavLink>
+          <NavLink to="/driver">Driver</NavLink>
+          <NavLink to="/admin">Admin</NavLink>
         </nav>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <Link
+            to={session ? "/my-bookings" : "/auth"}
+            className="hidden items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold md:inline-flex"
+          >
+            <UserIcon className="h-3.5 w-3.5" />
+            {session ? "Account" : "Sign in"}
+          </Link>
+        </div>
       </div>
     </header>
+  );
+}
+
+function NavLink({
+  to,
+  exact,
+  children,
+}: {
+  to: "/" | "/trips" | "/my-bookings" | "/driver" | "/admin";
+  exact?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      activeOptions={exact ? { exact: true } : undefined}
+      activeProps={{ className: "text-foreground bg-accent" }}
+      className="rounded-lg px-3 py-2 text-muted-foreground transition hover:text-foreground"
+    >
+      {children}
+    </Link>
   );
 }

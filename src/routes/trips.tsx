@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { TripCard } from "@/components/TripCard";
 import { formatDay } from "@/lib/format";
+import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/trips")({
   head: () => ({
@@ -55,7 +56,7 @@ function TripsPage() {
   }, [trips]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20 md:pb-0">
       <Header />
       <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 className="font-display text-5xl font-bold tracking-tight">Available trips</h1>
@@ -83,6 +84,7 @@ function TripsPage() {
         )}
       </div>
       <Footer />
+      <BottomNav />
     </div>
   );
 }

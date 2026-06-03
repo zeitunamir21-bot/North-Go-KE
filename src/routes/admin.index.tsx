@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Plus, Trash2, Phone, LogOut, Pencil } from "lucide-react";
+import { Loader2, Plus, Trash2, Phone, LogOut, Pencil, Download } from "lucide-react";
 import { formatDateTime, formatKES } from "@/lib/format";
 
 export const Route = createFileRoute("/admin/")({
@@ -150,15 +150,24 @@ function AdminPage() {
             <h1 className="font-display text-4xl font-bold tracking-tight">Dashboard</h1>
             <p className="mt-1 text-muted-foreground">Manage trips and passengers.</p>
           </div>
-          <Button
-            variant="outline"
-            onClick={async () => {
-              await supabase.auth.signOut();
-              navigate({ to: "/admin/login" });
-            }}
-          >
-            <LogOut className="mr-2 h-4 w-4" /> Sign out
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => exportBookingsCSV(trips, bookings)}
+              disabled={bookings.length === 0}
+            >
+              <Download className="mr-2 h-4 w-4" /> Export CSV
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                navigate({ to: "/admin/login" });
+              }}
+            >
+              <LogOut className="mr-2 h-4 w-4" /> Sign out
+            </Button>
+          </div>
         </div>
 
         <TripForm
@@ -360,6 +369,45 @@ function AdminPage() {
       <Footer />
     </div>
   );
+}
+
+function exportBookingsCSV(trips: any[], bookings: any[]) {
+  const tripMap = new Map(trips.map((t) => [t.id, t]));
+  const rows = [
+    ["Booking ID", "Created", "Status", "Passenger", "Phone", "Seats", "Seat numbers", "Pickup", "Destination", "Route", "Departure", "Driver", "Driver phone", "Price/seat", "Total", "Booking status"],
+    ...bookings.map((b) => {
+      const t = tripMap.get(b.trip_id) || {};
+      const total = (Number(t.price) || 0) * b.seats;
+      return [
+        b.id,
+        new Date(b.created_at).toISOString(),
+        b.status ?? "confirmed",
+        b.customer_name,
+        b.phone,
+        b.seats,
+        (b.seat_numbers ?? []).join("|"),
+        b.pickup_location ?? "",
+        b.destination ?? "",
+        t.route ?? "",
+        t.departure_time ? new Date(t.departure_time).toISOString() : "",
+        t.driver_name ?? "",
+        t.driver_phone ?? "",
+        t.price ?? "",
+        total,
+        b.booking_status ?? "",
+      ];
+    }),
+  ];
+  const csv = rows
+    .map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `northgo-bookings-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function toLocalInput(iso: string) {
