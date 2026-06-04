@@ -465,13 +465,61 @@ function BookPage() {
                 )}
               </div>
 
-              <div className="flex items-center justify-between border-t border-border pt-4">
-                <div className="text-sm text-muted-foreground">
-                  Total ·{" "}
-                  <span className="font-semibold text-foreground">
-                    {formatKES(Number(trip.price) * seatCount)}
-                  </span>
+              <div className="rounded-xl border border-dashed border-border bg-muted/40 p-3">
+                <Label htmlFor="promo" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Promo code
+                </Label>
+                <div className="mt-1.5 flex gap-2">
+                  <Input
+                    id="promo"
+                    value={promoInput}
+                    onChange={(e) => setPromoInput(e.target.value.toUpperCase().slice(0, 32))}
+                    placeholder="e.g. WELCOME10"
+                    className="h-10 font-mono uppercase"
+                    disabled={!!promo}
+                  />
+                  {promo ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setPromo(null);
+                        setPromoInput("");
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  ) : (
+                    <Button type="button" onClick={applyPromo} disabled={promoBusy || !promoInput.trim()}>
+                      {promoBusy && <Loader2 className="mr-1 h-4 w-4 animate-spin" />} Apply
+                    </Button>
+                  )}
                 </div>
+                {promo && (
+                  <p className="mt-2 text-xs font-medium text-success">
+                    ✓ {promo.code} applied — KES {discount} off
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5 border-t border-border pt-4 text-sm">
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span>{formatKES(subtotal)}</span>
+                </div>
+                {discount > 0 && (
+                  <div className="flex items-center justify-between text-success">
+                    <span>Discount ({promo?.code})</span>
+                    <span>-{formatKES(discount)}</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-1 text-base font-semibold text-foreground">
+                  <span>Total (pay on board)</span>
+                  <span className="font-display text-lg">{formatKES(finalTotal)}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end pt-2">
                 <Button
                   type="submit"
                   size="lg"
