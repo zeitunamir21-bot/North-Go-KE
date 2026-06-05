@@ -8,7 +8,7 @@ import {
 const faqs = [
   {
     q: "How do I book a seat from Isiolo to Nairobi?",
-    a: "Pick an upcoming trip from the Trips page, choose your seat on the matatu map, enter your name and phone, and confirm. Your seat is reserved instantly — no upfront payment.",
+    a: "Pick an upcoming trip from the Trips page, choose your seat on the seat map, enter your name and phone, and confirm. Your seat is reserved instantly — no upfront payment.",
   },
   {
     q: "How much is a ticket between Isiolo and Nairobi?",
@@ -27,7 +27,7 @@ const faqs = [
     a: "Every driver on NorthGo is approved by our admin team. You can view a driver's profile, vehicle, plate number, and passenger reviews before you book.",
   },
   {
-    q: "Do you offer matatu booking for groups?",
+    q: "Do you offer van booking for groups?",
     a: "Yes. Pick the number of seats you need on the booking page. For full-vehicle bookings or chartered trips, call the driver directly from the trip listing.",
   },
 ];
