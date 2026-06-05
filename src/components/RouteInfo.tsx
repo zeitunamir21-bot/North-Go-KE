@@ -9,7 +9,7 @@ export function RouteInfo() {
         </h2>
         <p className="mt-2 text-muted-foreground">
           A 285 km journey along the A2 highway — Mount Kenya views, smooth tarmac, and trusted
-          intercity van service.
+          intercity 7-seater Sienta service.
         </p>
       </div>
       <div className="grid gap-4 md:grid-cols-3">

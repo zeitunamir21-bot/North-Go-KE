@@ -27,7 +27,7 @@ const faqs = [
     a: "Every driver on NorthGo is approved by our admin team. You can view a driver's profile, vehicle, plate number, and passenger reviews before you book.",
   },
   {
-    q: "Do you offer van booking for groups?",
+    q: "Do you offer 7-seater Sienta booking for groups?",
     a: "Yes. Pick the number of seats you need on the booking page. For full-vehicle bookings or chartered trips, call the driver directly from the trip listing.",
   },
 ];

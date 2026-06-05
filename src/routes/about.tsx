@@ -33,7 +33,7 @@ function AboutPage() {
         <p className="mt-5 text-lg text-muted-foreground">
           NorthGo started with one simple idea: travelers between Isiolo and Nairobi deserve a transparent,
           trustworthy way to book a seat — without calling around, queuing at the stage, or risking a
-          no-show. We connect everyday Kenyans with vetted van drivers, real seat availability,
+          no-show. We connect everyday Kenyans with vetted Sienta drivers, real seat availability,
           and honest fares.
         </p>
 

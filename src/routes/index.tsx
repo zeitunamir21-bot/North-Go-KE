@@ -21,13 +21,13 @@ import heroImg from "@/assets/hero-van.jpg";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Isiolo to Nairobi Booking — NorthGo Van Travel Kenya" },
+      { title: "Isiolo to Nairobi Booking — NorthGo 7-Seater Sienta Travel Kenya" },
       {
         name: "description",
         content:
-          "Book your Isiolo to Nairobi seat online in minutes. Daily van trips, real-time seat availability, verified Kenyan drivers, pay on board.",
+          "Book your Isiolo to Nairobi seat online in minutes. Daily 7-seater Sienta trips, real-time seat availability, verified Kenyan drivers, pay on board.",
       },
-      { name: "keywords", content: "Isiolo to Nairobi booking, Van booking Kenya, Nairobi Isiolo travel, book transport online Kenya, Isiolo Nairobi van" },
+      { name: "keywords", content: "Isiolo to Nairobi booking, Sienta booking Kenya, Nairobi Isiolo travel, book transport online Kenya, Isiolo Nairobi Sienta" },
       { property: "og:title", content: "Book Your Isiolo ⇄ Nairobi Seat in Minutes — NorthGo" },
       { property: "og:description", content: "Safe, reliable, and affordable Kenyan intercity travel with real-time seat availability." },
     ],
@@ -75,7 +75,7 @@ function Home() {
       <section className="relative overflow-hidden">
         <img
           src={heroImg}
-          alt="View from a comfortable van traveling toward Mount Kenya at sunrise"
+          alt="View from a comfortable 7-seater Sienta traveling toward Mount Kenya at sunrise"
           width={1600}
           height={1024}
           className="absolute inset-0 h-full w-full object-cover"

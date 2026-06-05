@@ -14,11 +14,11 @@ const URL = "https://no-pay-routes.lovable.app/nairobi-to-isiolo";
 export const Route = createFileRoute("/nairobi-to-isiolo")({
   head: () => ({
     meta: [
-      { title: "Nairobi to Isiolo Booking — Book a Van Seat Online | NorthGo" },
-      { name: "description", content: "Book your Nairobi to Isiolo van seat online. Daily trips on the A2 highway. Verified drivers. KES 1,300. Pay on board." },
-      { name: "keywords", content: "Nairobi to Isiolo, Nairobi Isiolo booking, van Nairobi Isiolo, transport Nairobi Isiolo, Nairobi Isiolo fare" },
+      { title: "Nairobi to Isiolo Booking — Book a 7-Seater Sienta Seat Online | NorthGo" },
+      { name: "description", content: "Book your Nairobi to Isiolo 7-seater Sienta seat online. Daily trips on the A2 highway. Verified drivers. KES 1,300. Pay on board." },
+      { name: "keywords", content: "Nairobi to Isiolo, Nairobi Isiolo booking, Sienta Nairobi Isiolo, transport Nairobi Isiolo, Nairobi Isiolo fare" },
       { property: "og:title", content: "Nairobi to Isiolo — Book a Seat Online" },
-      { property: "og:description", content: "Daily Nairobi to Isiolo van trips. Verified drivers, real seat availability, pay on board." },
+      { property: "og:description", content: "Daily Nairobi to Isiolo 7-seater Sienta trips. Verified drivers, real seat availability, pay on board." },
       { property: "og:url", content: URL },
     ],
     links: [{ rel: "canonical", href: URL }],
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/nairobi-to-isiolo")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@type": "Service",
-          serviceType: "Intercity van transport",
+          serviceType: "Intercity 7-seater Sienta transport",
           areaServed: ["Nairobi", "Isiolo", "Kenya"],
           provider: { "@type": "Organization", name: "NorthGo" },
           offers: { "@type": "Offer", price: "1300", priceCurrency: "KES" },
@@ -63,7 +63,7 @@ function Page() {
         <span className="text-xs font-semibold uppercase tracking-wider text-primary">Route</span>
         <h1 className="mt-3 font-display text-5xl font-bold tracking-tight md:text-6xl">Nairobi → Isiolo</h1>
         <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-          Book a verified van seat back to Isiolo from Nairobi. Daily departures from CBD,
+          Book a verified 7-seater Sienta seat back to Isiolo from Nairobi. Daily departures from CBD,
           smooth A2 highway, scenic Mount Kenya views. Pay on board.
         </p>
 

@@ -581,7 +581,7 @@ function ProfileEditor({ driver, onChanged }: { driver: Driver; onChanged: () =>
       </p>
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
         <div>
-          <Label className="mb-1.5 block">Vehicle (van type)</Label>
+          <Label className="mb-1.5 block">Vehicle (Sienta / 7-seater type)</Label>
           <Input value={vehicle} onChange={(e) => setVehicle(e.target.value)} maxLength={60} />
         </div>
         <div>
