@@ -310,6 +310,10 @@ export type Database = {
       }
       get_booking_details: { Args: { p_booking_id: string }; Returns: Json }
       get_driver_public: { Args: { p_driver_id: string }; Returns: Json }
+      get_driver_ratings_public: {
+        Args: { p_driver_id: string }
+        Returns: Json
+      }
       get_my_bookings: { Args: never; Returns: Json }
       get_platform_stats: { Args: never; Returns: Json }
       get_taken_seats: { Args: { p_trip_id: string }; Returns: number[] }
@@ -323,6 +327,7 @@ export type Database = {
         Returns: boolean
       }
       is_approved_driver: { Args: { _user_id: string }; Returns: boolean }
+      mask_name: { Args: { p_name: string }; Returns: string }
       redeem_promo: { Args: { p_code: string }; Returns: undefined }
       reserve_seats:
         | {
