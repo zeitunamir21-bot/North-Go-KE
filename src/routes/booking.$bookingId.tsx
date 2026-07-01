@@ -243,13 +243,17 @@ function RateDriverCard({
   const { data: ratings = [], refetch } = useQuery({
     queryKey: ["ratings", driverId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("ratings")
-        .select("*")
-        .eq("driver_id", driverId)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("get_driver_ratings_public", {
+        p_driver_id: driverId,
+      });
       if (error) throw error;
-      return data;
+      return (data ?? []) as Array<{
+        id: string;
+        stars: number;
+        comment: string | null;
+        created_at: string;
+        customer_name: string;
+      }>;
     },
   });
 
