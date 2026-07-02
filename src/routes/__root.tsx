@@ -8,9 +8,12 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 
+import { useEffect } from "react";
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
 import { WhatsAppFloating } from "@/components/WhatsAppFloating";
+import { registerServiceWorker } from "@/lib/register-sw";
+
 
 function NotFoundComponent() {
   return (
