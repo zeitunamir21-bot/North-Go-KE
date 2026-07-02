@@ -16,6 +16,8 @@ import { ContactSupport } from "@/components/ContactSupport";
 import { BottomNav } from "@/components/BottomNav";
 import { StickyBookCTA } from "@/components/StickyBookCTA";
 import { PromoBanner } from "@/components/PromoBanner";
+import { DownloadApkButton } from "@/components/DownloadApkButton";
+
 import heroImg from "@/assets/hero-van.jpg";
 
 export const Route = createFileRoute("/")({
