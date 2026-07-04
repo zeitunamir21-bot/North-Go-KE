@@ -189,8 +189,7 @@ function BookPage() {
       return;
     }
     setSubmitting(true);
-    const { data: sessionData } = await supabase.auth.getSession();
-    const { data, error } = await supabase.rpc("reserve_seats", {
+    const rpcArgs = {
       p_trip_id: tripId,
       p_customer_name: parsed.data.customer_name,
       p_phone: parsed.data.phone,
@@ -198,21 +197,19 @@ function BookPage() {
       p_pickup_location: parsed.data.pickup_location,
       p_destination: parsed.data.destination,
       p_seat_numbers: selectedSeats,
-      p_user_id: sessionData.session?.user.id ?? null,
-    });
+    };
+    const { data, error } = promo
+      ? await supabase.rpc("reserve_seats_with_promo", {
+          ...rpcArgs,
+          p_promo_code: promo.code,
+          p_subtotal: subtotal,
+        })
+      : await supabase.rpc("reserve_seats", rpcArgs);
     setSubmitting(false);
     if (error || !data) {
       toast.error(error?.message ?? "Could not reserve seat");
       refetchTaken();
       return;
-    }
-    if (promo) {
-      // Persist promo on booking + redeem
-      await supabase
-        .from("bookings")
-        .update({ promo_code: promo.code, discount_amount: discount })
-        .eq("id", data.id);
-      await supabase.rpc("redeem_promo", { p_code: promo.code });
     }
     if (trip?.driver_phone) {
       const seatList = data.seat_numbers?.length
