@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { DriverPhoto } from "@/components/DriverPhoto";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -461,7 +462,7 @@ function PhotoSection({ driver, onChanged }: { driver: Driver; onChanged: () => 
           .upload(path, file, { contentType: file.type, upsert: false });
         if (upErr) throw new Error(upErr.message);
         const { data: pub } = supabase.storage.from("driver-photos").getPublicUrl(path);
-        newUrls.push(pub.publicUrl);
+        newUrls.push(pub?.publicUrl || path);
       }
       const { error } = await supabase
         .from("drivers")
@@ -536,7 +537,7 @@ function PhotoSection({ driver, onChanged }: { driver: Driver; onChanged: () => 
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {photos.map((url) => (
             <div key={url} className="group relative aspect-square overflow-hidden rounded-xl border border-border">
-              <img src={url} alt="Driver vehicle" className="h-full w-full object-cover" />
+              <DriverPhoto src={url} alt="Driver vehicle" className="h-full w-full object-cover" />
               <button
                 type="button"
                 onClick={() => removePhoto(url)}

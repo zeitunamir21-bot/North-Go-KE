@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Car, Clock, MapPin, Hash } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { DriverPhoto } from "@/components/DriverPhoto";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -106,7 +107,7 @@ function DriverProfilePage() {
           <div className="flex flex-col items-start gap-6 md:flex-row">
             <div className="h-32 w-32 shrink-0 overflow-hidden rounded-2xl border border-border bg-muted">
               {photo ? (
-                <img src={photo} alt={driver.full_name} className="h-full w-full object-cover" />
+                <DriverPhoto src={photo} alt={driver.full_name} className="h-full w-full object-cover" />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-muted-foreground">
                   {driver.full_name.charAt(0)}
@@ -145,7 +146,7 @@ function DriverProfilePage() {
           {driver.photos.length > 1 && (
             <div className="mt-6 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
               {driver.photos.slice(0, 6).map((url) => (
-                <img
+                <DriverPhoto
                   key={url}
                   src={url}
                   alt={`${driver.full_name}'s vehicle`}

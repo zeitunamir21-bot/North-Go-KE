@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import { z } from "zod";
 import { ArrowLeft, Clock, MapPin, Loader2, User, Car, Hash } from "lucide-react";
+import { DriverPhoto } from "@/components/DriverPhoto";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -305,7 +306,7 @@ function BookPage() {
                   <div className="flex items-start gap-4">
                     <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-border bg-muted">
                       {driverProfile.driver.photos?.[0] ? (
-                        <img
+                        <DriverPhoto
                           src={driverProfile.driver.photos[0]}
                           alt={driverProfile.driver.full_name}
                           className="h-full w-full object-cover"

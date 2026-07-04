@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { CheckCircle2, Phone, MessageCircle, MapPin, Clock, Loader2, Share2, Gift, Copy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { DriverPhoto } from "@/components/DriverPhoto";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -154,7 +155,7 @@ function ConfirmationPage() {
             {driver.photos && driver.photos.length > 0 && (
               <div className="mt-4 grid grid-cols-3 gap-2">
                 {driver.photos.slice(0, 6).map((url) => (
-                  <img
+                  <DriverPhoto
                     key={url}
                     src={url}
                     alt={`${driver.full_name}'s vehicle`}
