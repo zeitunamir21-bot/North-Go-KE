@@ -25,7 +25,7 @@ export function DownloadApkButton({
     >
       <Download className="h-4 w-4" />
       <span>Download App</span>
-      <span className="hidden text-[10px] font-medium opacity-70 sm:inline">APK · 4 MB</span>
+      <span className="hidden text-[10px] font-medium opacity-70 sm:inline">APK · 3.4 MB</span>
     </a>
   );
 }
