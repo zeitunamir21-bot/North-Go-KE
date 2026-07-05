@@ -5,9 +5,8 @@ on:
   push:
     branches: [main]
     paths:
-      - "src/**"
-      - "public/**"
       - "capacitor.config.ts"
+      - "capacitor-shell/**"
       - ".github/workflows/build-apk.yml"
 
 permissions:
@@ -32,20 +31,26 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Install Dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Build Web Shell
-        run: mkdir -p capacitor-shell && cp -f capacitor-shell/index.html capacitor-shell/index.html 2>/dev/null || true
+      - name: Ensure Web Shell
+        run: |
+          mkdir -p capacitor-shell
+          if [ ! -f capacitor-shell/index.html ]; then
+            cat > capacitor-shell/index.html <<'HTML'
+          <!doctype html><html><head><meta charset="utf-8"><title>NorthGo</title></head>
+          <body><script>location.replace("https://no-pay-routes.lovable.app");</script></body></html>
+          HTML
+          fi
+          ls -la capacitor-shell
 
       - name: Install Capacitor
-        run: npm install --no-save --legacy-peer-deps @capacitor/cli @capacitor/core @capacitor/android
+        run: |
+          npm init -y >/dev/null 2>&1 || true
+          npm install --no-save --legacy-peer-deps \
+            @capacitor/cli@6 @capacitor/core@6 @capacitor/android@6 \
+            typescript@5 @types/node@20
 
       - name: Add Android Platform
-        run: |
-          if [ ! -d "android" ]; then
-            npx cap add android
-          fi
+        run: npx cap add android || echo "android already exists"
 
       - name: Sync Android
         run: npx cap sync android
@@ -55,7 +60,7 @@ jobs:
 
       - name: Build Debug APK
         working-directory: android
-        run: ./gradlew assembleDebug
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Rename APK
         run: cp android/app/build/outputs/apk/debug/app-debug.apk northgo.apk
@@ -68,6 +73,8 @@ jobs:
 
       - name: Publish to Release (latest)
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: app-latest
           name: NorthGo Android App (latest)
