@@ -2,7 +2,9 @@ import { Download } from "lucide-react";
 import { useState } from "react";
 
 // Set VITE_APK_URL in .env to a real signed APK URL when the Android build is ready.
-const APK_URL = (import.meta.env.VITE_APK_URL as string | undefined)?.trim() || "";
+const APK_URL =
+  (import.meta.env.VITE_APK_URL as string | undefined)?.trim() ||
+  "https://github.com/zeitunamir21-bot/no-pay-routes/releases/latest/download/northgo.apk";
 
 export function DownloadApkButton({
   variant = "default",
