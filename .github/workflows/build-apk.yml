@@ -2,6 +2,16 @@ name: Build APK
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "capacitor.config.ts"
+      - ".github/workflows/build-apk.yml"
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -16,33 +26,51 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Web App
-        run: npm run build
-
-      - name: Install Capacitor
-        run: npm install --no-save @capacitor/cli @capacitor/android
-
-      - name: Sync Android
-        run: npx @capacitor/cli sync android
-
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
+      - name: Install Dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build Web App
+        run: npm run build
+
+      - name: Install Capacitor
+        run: npm install --no-save --legacy-peer-deps @capacitor/cli @capacitor/core @capacitor/android
+
+      - name: Add Android Platform
+        run: |
+          if [ ! -d "android" ]; then
+            npx cap add android
+          fi
+
+      - name: Sync Android
+        run: npx cap sync android
+
       - name: Grant Gradle Permission
         run: chmod +x android/gradlew
 
-      - name: Build APK
+      - name: Build Debug APK
         working-directory: android
         run: ./gradlew assembleDebug
 
-      - name: Upload APK
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk northgo.apk
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: APK
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: northgo-apk
+          path: northgo.apk
+
+      - name: Publish to Release (latest)
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: app-latest
+          name: NorthGo Android App (latest)
+          body: Automatically built from the latest commit on main.
+          files: northgo.apk
+          make_latest: "true"
