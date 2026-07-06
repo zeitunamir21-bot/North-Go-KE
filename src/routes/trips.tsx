@@ -8,12 +8,22 @@ import { TripCard } from "@/components/TripCard";
 import { formatDay } from "@/lib/format";
 import { BottomNav } from "@/components/BottomNav";
 
+const TRIPS_URL = "https://no-pay-routes.lovable.app/trips";
+
 export const Route = createFileRoute("/trips")({
   head: () => ({
     meta: [
-      { title: "Available Trips — NorthGo" },
-      { name: "description", content: "Browse upcoming Isiolo ⇄ Nairobi rides and reserve a seat." },
+      { title: "Available Trips — Isiolo ⇄ Nairobi Seat Booking | NorthGo" },
+      { name: "description", content: "Browse upcoming Isiolo ⇄ Nairobi 7-seater Sienta rides. Live seat availability, verified Kenyan drivers, reserve online and pay on board." },
+      { property: "og:title", content: "Available Trips — Isiolo ⇄ Nairobi | NorthGo" },
+      { property: "og:description", content: "Live seat availability for daily Isiolo ⇄ Nairobi rides. Reserve online, pay on board." },
+      { property: "og:url", content: TRIPS_URL },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Available Trips — Isiolo ⇄ Nairobi | NorthGo" },
+      { name: "twitter:description", content: "Live seat availability for daily Isiolo ⇄ Nairobi rides." },
     ],
+    links: [{ rel: "canonical", href: TRIPS_URL }],
   }),
   component: TripsPage,
 });

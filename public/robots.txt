@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /my-bookings
+Disallow: /history
+Disallow: /booking/
+Disallow: /driver/login
+Disallow: /driver/signup
+Disallow: /reset-password
+Disallow: /forgot-password
+
+Sitemap: https://no-pay-routes.lovable.app/sitemap.xml

@@ -20,18 +20,41 @@ import { DownloadApkButton } from "@/components/DownloadApkButton";
 
 import heroImg from "@/assets/hero-van.jpg";
 
+const HOME_URL = "https://no-pay-routes.lovable.app/";
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Isiolo to Nairobi Booking — NorthGo 7-Seater Sienta Travel Kenya" },
+      { title: "NorthGo — Isiolo ⇄ Nairobi 7-Seater Sienta Booking in Kenya" },
       {
         name: "description",
         content:
-          "Book your Isiolo to Nairobi seat online in minutes. Daily 7-seater Sienta trips, real-time seat availability, verified Kenyan drivers, pay on board.",
+          "Book your Isiolo ⇄ Nairobi seat online in minutes. Daily 7-seater Sienta trips, real-time seat availability, verified Kenyan drivers, pay on board — no upfront deposit.",
       },
-      { name: "keywords", content: "Isiolo to Nairobi booking, Sienta booking Kenya, Nairobi Isiolo travel, book transport online Kenya, Isiolo Nairobi Sienta" },
-      { property: "og:title", content: "Book Your Isiolo ⇄ Nairobi Seat in Minutes — NorthGo" },
-      { property: "og:description", content: "Safe, reliable, and affordable Kenyan intercity travel with real-time seat availability." },
+      { name: "keywords", content: "Isiolo to Nairobi booking, Nairobi to Isiolo, Sienta booking Kenya, Isiolo Nairobi travel, book transport online Kenya, NorthGo" },
+      { property: "og:title", content: "NorthGo — Book Your Isiolo ⇄ Nairobi Seat in Minutes" },
+      { property: "og:description", content: "Safe, reliable, and affordable Kenyan intercity travel with real-time seat availability. Verified drivers. Pay on board." },
+      { property: "og:url", content: HOME_URL },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "NorthGo — Isiolo ⇄ Nairobi Booking" },
+      { name: "twitter:description", content: "Daily 7-seater Sienta rides. Live seat availability, verified drivers, pay on board." },
+    ],
+    links: [{ rel: "canonical", href: HOME_URL }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "NorthGo — Isiolo ⇄ Nairobi 7-Seater Sienta Booking in Kenya",
+          url: HOME_URL,
+          description: "Book your Isiolo ⇄ Nairobi seat online. Daily 7-seater Sienta trips, verified Kenyan drivers, pay on board.",
+          isPartOf: { "@id": "https://no-pay-routes.lovable.app/#website" },
+          about: { "@id": "https://no-pay-routes.lovable.app/#organization" },
+          primaryImageOfPage: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/23f4e545-2583-4432-990c-1431b6d34504",
+        }),
+      },
     ],
   }),
   component: Home,
