@@ -464,6 +464,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      submit_rating: {
+        Args: {
+          p_booking_id: string
+          p_comment: string
+          p_customer_name: string
+          p_driver_id: string
+          p_stars: number
+          p_trip_id: string
+        }
+        Returns: {
+          comment: string | null
+          created_at: string
+          customer_name: string
+          driver_id: string
+          id: string
+          stars: number
+          trip_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ratings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "driver"
