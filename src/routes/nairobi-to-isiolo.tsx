@@ -43,16 +43,11 @@ function Page() {
   const { data: trips = [] } = useQuery({
     queryKey: ["route-trips", "nairobi-isiolo"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("trips")
-        .select("*")
-        .eq("status", "scheduled")
-        .gte("departure_time", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .ilike("route", "%Nairobi%Isiolo%")
-        .order("departure_time")
-        .limit(9);
+      const { data, error } = await supabase.rpc("list_upcoming_trips_public");
       if (error) throw error;
-      return data;
+      return ((data ?? []) as any[])
+        .filter((t) => /nairobi.*isiolo/i.test(t.route))
+        .slice(0, 9);
     },
   });
 

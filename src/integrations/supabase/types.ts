@@ -327,6 +327,7 @@ export type Database = {
         Returns: boolean
       }
       is_approved_driver: { Args: { _user_id: string }; Returns: boolean }
+      list_upcoming_trips_public: { Args: never; Returns: Json }
       mask_name: { Args: { p_name: string }; Returns: string }
       redeem_promo: { Args: { p_code: string }; Returns: undefined }
       reserve_seats:

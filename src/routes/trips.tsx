@@ -33,14 +33,24 @@ function TripsPage() {
   const { data: trips = [], isLoading } = useQuery({
     queryKey: ["trips", "all-upcoming"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("trips")
-        .select("*")
-        .eq("status", "scheduled")
-        .gte("departure_time", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order("departure_time");
+      const { data, error } = await supabase.rpc("list_upcoming_trips_public");
       if (error) throw error;
-      return data;
+      return (data ?? []) as Array<{
+        id: string;
+        route: string;
+        departure_time: string;
+        pickup_point: string;
+        total_seats: number;
+        available_seats: number;
+        vehicle_name: string;
+        driver_name: string;
+        driver_phone: string;
+        price: number;
+        status: string;
+        plate_number: string | null;
+        rating_avg: number | null;
+        rating_count: number | null;
+      }>;
     },
   });
 

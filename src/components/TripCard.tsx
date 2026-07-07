@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, Clock, MapPin, Phone, MessageCircle, Users, Flame } from "lucide-react";
+import { ArrowRight, Clock, MapPin, Phone, MessageCircle, Users, Flame, Star, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Countdown } from "@/components/Countdown";
@@ -17,6 +17,9 @@ type Trip = {
   status: string;
   driver_name: string;
   driver_phone: string;
+  plate_number?: string | null;
+  rating_avg?: number | null;
+  rating_count?: number | null;
 };
 
 export function TripCard({ trip }: { trip: Trip }) {
@@ -80,9 +83,28 @@ export function TripCard({ trip }: { trip: Trip }) {
 
       {trip.driver_phone && (
         <div className="mt-4 border-t border-border pt-4">
-          <div className="text-xs text-muted-foreground">
-            Driver · <span className="font-medium text-foreground">{trip.driver_name}</span>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-xs text-muted-foreground">
+              Driver · <span className="font-medium text-foreground">{trip.driver_name}</span>
+            </div>
+            {(trip.rating_count ?? 0) > 0 ? (
+              <div className="flex items-center gap-1 text-xs">
+                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
+                <span className="font-semibold text-foreground">{Number(trip.rating_avg ?? 0).toFixed(1)}</span>
+                <span className="text-muted-foreground">({trip.rating_count})</span>
+              </div>
+            ) : (
+              <div className="text-xs text-muted-foreground">No ratings yet</div>
+            )}
           </div>
+          {trip.plate_number && (
+            <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <IdCard className="h-3.5 w-3.5" />
+              <span className="font-mono font-semibold tracking-wider text-foreground">{trip.plate_number}</span>
+              <span>·</span>
+              <span>{trip.vehicle_name}</span>
+            </div>
+          )}
           <div className="mt-2 grid grid-cols-2 gap-2">
             <Button asChild variant="outline" size="sm" className="rounded-lg">
               <a href={`tel:${trip.driver_phone.replace(/[^\d+]/g, "")}`}>
