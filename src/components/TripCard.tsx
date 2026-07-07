@@ -128,6 +128,3 @@ export function TripCard({ trip }: { trip: Trip }) {
     </article>
   );
 }
-    </article>
-  );
-}
