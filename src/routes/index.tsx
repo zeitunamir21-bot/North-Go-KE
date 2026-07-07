@@ -65,15 +65,9 @@ function Home() {
   const { data: trips = [] } = useQuery({
     queryKey: ["trips", "upcoming"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("trips")
-        .select("*")
-        .eq("status", "scheduled")
-        .gte("departure_time", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
-        .order("departure_time")
-        .limit(3);
+      const { data, error } = await supabase.rpc("list_upcoming_trips_public");
       if (error) throw error;
-      return data;
+      return ((data ?? []) as any[]).slice(0, 3);
     },
   });
 
