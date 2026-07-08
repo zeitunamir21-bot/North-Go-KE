@@ -213,24 +213,7 @@ function BookPage() {
       refetchTaken();
       return;
     }
-    if (trip?.driver_phone) {
-      const seatList = data.seat_numbers?.length
-        ? ` (seat${data.seat_numbers.length > 1 ? "s" : ""} #${data.seat_numbers.join(", #")})`
-        : "";
-      const promoLine = promo ? `%0APromo: ${promo.code} (-KES ${discount})` : "";
-      const message =
-        `New NorthGo booking%0A` +
-        `Trip: ${encodeURIComponent(trip.route)}%0A` +
-        `Departure: ${encodeURIComponent(formatDateTime(trip.departure_time))}%0A` +
-        `Passenger: ${encodeURIComponent(parsed.data.customer_name)}%0A` +
-        `Phone: ${encodeURIComponent(parsed.data.phone)}%0A` +
-        `Seats: ${seatCount}${encodeURIComponent(seatList)}%0A` +
-        `Pickup: ${encodeURIComponent(parsed.data.pickup_location)}%0A` +
-        `Destination: ${encodeURIComponent(parsed.data.destination)}` +
-        promoLine;
-      const driverNumber = trip.driver_phone.replace(/[^\d]/g, "");
-      window.open(`https://wa.me/${driverNumber}?text=${message}`, "_blank");
-    }
+    // Driver contact is revealed on the booking confirmation page.
     navigate({ to: "/booking/$bookingId", params: { bookingId: data.id } });
   }
 
