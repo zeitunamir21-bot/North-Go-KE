@@ -24,7 +24,9 @@ function HistoryPage() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("trips")
-        .select("*")
+        .select(
+          "id,route,departure_time,pickup_point,total_seats,available_seats,vehicle_name,driver_name,price,status,owner_id,created_at,updated_at",
+        )
         .lt("departure_time", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString())
         .order("departure_time", { ascending: false })
         .limit(200);
